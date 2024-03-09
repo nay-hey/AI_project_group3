@@ -23,8 +23,8 @@ class Board :#defining functions for the tetris game's grid
         self.height = 20
         self.linesCleared = 0 #to keep track of score
         self.emptyGrid() #creating a 2D list to represent the grid.
-        self.pieceList = [] #creating an array 
-        self.heldPiece=self.generatePiece()
+        self.pieceList = [] #creating an array containing the tetromino pieces. Each tetromino is specified by the coordinates of its color.
+        self.heldPiece=self.generatePiece() #the next piece that will come into play
         
     def emptyGrid(self):
         self.grid = []#creating a 2D list to represent the grid. 
@@ -32,14 +32,15 @@ class Board :#defining functions for the tetris game's grid
         for x in range(self.width):
             self.emptyRow.append(0)
         for rowCount in range(self.height):
-            self.grid.append(copy.copy(self.emptyRow))#creates a shallow copy which reflects changes instantaneously.
+            self.grid.append(copy.copy(self.emptyRow))#creates a shallow copy which reflects changes  made in self.emptyRow to 
+            #self.emptyGrid instantaneously.
 
 
-    def centrePiece(self, tetromino):
-        tetromino.centre[0] = tetromino.centre[0] + (self.width/2) - 2
-        for coord in tetromino.vertexCoords:
-            coord[0] += (self.width/2) - 2
-        for coord in tetromino.blockCoords:
+    def centrePiece(self, tetromino):#this moves the given tetromino form its default position at top left corner, to middle of top row which is where the pieces shouuld appear from initially.
+        tetromino.centre[0] += (self.width/2) - 2 #tetromino.centre[0] is the x coordinate of the centre of tetromino and it is shifted to the middle of the grid
+        for coord in tetromino.vertexCoords:#iterating over the list of all vertex coordinates
+            coord[0] += (self.width/2) - 2 #similarly for x coordinate of each vertex it is shifted by as much as the centre is shifted to maintain shape of block
+        for coord in tetromino.blockCoords:#done for the block coordinates
             coord[0] += (self.width/2) - 2 
         
     def generatePiece(self):
