@@ -1,31 +1,29 @@
-import copy, random
-import sys#needed to quit the pygame
+import copy, random #for generating blocks
+import sys #needed to quit the pygame
 import pygame
-from enum import *
-from time import sleep
 
 pygame.init()#initialising pygame
 
-display_h = pygame.display.Info().current_h
-blockSize = display_h // 30
+display_h = pygame.display.Info().current_h #system's height
+blockSize = display_h // 30 #1/30 of that height is a block, so that a 20 by 10 blocks tetris grid is visible in 2/3 rd by 1/3rd of the dispay screen
 height = 20* blockSize
 width=height+10
-screen = pygame.display.set_mode((width, height))#initializes the game screen 
-pygame.display.set_caption("Tetris_group3")
+screen = pygame.display.set_mode((width, height))#initializes the game screen with given dimensions
+pygame.display.set_caption("Tetris_group3")#sets the title of the screen
 
-clock = pygame.time.Clock()#we need this to time the game and control frame rate
+clock = pygame.time.Clock()#we need this to time the game and control frame rate (how fast the game progresses)
 
-timer_seconds=10#the game is timed and  gets over in these many seconds
+timer_seconds=10 #the game is timed using this variable as a counter and  gets over after these many seconds
 
-class Board:
+class Board :#defining functions for the tetris game's grid
 
     def __init__(self, colour = "White"):
         self.colour = colour
         self.width = 10
         self.height = 20
-        self.linesCleared = 0
-        self.emptyGrid()
-        self.pieceList = []
+        self.linesCleared = 0 #to keep track of score
+        self.emptyGrid() #creating a 2D list to represent the grid.
+        self.pieceList = [] #creating an array 
         self.heldPiece=self.generatePiece()
         
     def emptyGrid(self):
