@@ -115,20 +115,22 @@ class Draw:
         screen.blit(pauseText, ((self.boardOffset+12)*blockSize, pauseYpos*blockSize))
         
     def drawGameOver(self, board):
-        fontSize = int(2 * blockSize)
-        gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0],size=fontSize)
-        gameOverText = gameFont.render("GAME OVER", True, self.fontColour)
+        fontSize = int(2 * blockSize) 
+        gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0],size=fontSize) # Get a font object with the system's first available font at the specified size
+        # Render "GAME OVER" text using the font, antialiasing enabled, with specified font color
+        gameOverText = gameFont.render("GAME OVER", True, self.fontColour) # Render "GAME OVER" text using the font, antialiasing enabled, with specified font color
+        # Blit the rendered "GAME OVER" text onto the screen at a specific position
         screen.blit(gameOverText, (blockSize*self.boardOffset, ((board.height/2+self.boardOffset)-1)*blockSize))
 
     def drawStartScreen(self, board):
-        fontSize = int(2 * blockSize)
-        gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0],size=fontSize)
-        tetrisText = gameFont.render("WELCOME TO TETRIS!", False, self.fontColour)
-        aText = gameFont.render("PRESS  A  :  AI MODE", True, self.fontColour)
-        hText = gameFont.render("PRESS  H  :  HUMAN", True, self.fontColour)
-        screen.blit(tetrisText, ((self.boardWidth//2-1.5)*blockSize, ((board.height/2)-5)*blockSize))
-        screen.blit(aText, ((self.boardWidth//2-1.5)*blockSize, ((board.height/2))*blockSize))
-        screen.blit(hText, ((self.boardWidth//2-1.5)*blockSize, ((board.height/2)+self.boardOffset+1)*blockSize))
+        fontSize = int(2 * blockSize) # Determine font size
+        gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0],size=fontSize)# Load game font
+        tetrisText = gameFont.render("WELCOME TO TETRIS!", False, self.fontColour)# Render "WELCOME TO TETRIS!" text
+        aText = gameFont.render("PRESS  A  :  AI MODE", True, self.fontColour) # Render "PRESS A : AI MODE" text
+        hText = gameFont.render("PRESS  H  :  HUMAN", True, self.fontColour) # Render "PRESS H : HUMAN" text
+        screen.blit(tetrisText, ((self.boardWidth//2-1.5)*blockSize, ((board.height/2)-5)*blockSize)) # Blit "WELCOME TO TETRIS!" text onto the screen
+        screen.blit(aText, ((self.boardWidth//2-1.5)*blockSize, ((board.height/2))*blockSize)) # Blit "PRESS A : AI MODE" text onto the screen
+        screen.blit(hText, ((self.boardWidth//2-1.5)*blockSize, ((board.height/2)+self.boardOffset+1)*blockSize)) # Blit "PRESS H : HUMAN" text onto the screen
         
     def drawPauseScreen(self):
         fontSize = int(2 * blockSize)
@@ -159,11 +161,12 @@ class Draw:
         pygame.display.update()
 
 class Tetromino():
+    # Dictionary mapping color names to RGB tuples
     Colours = {
-        "red" : (255,0,0),
-        "orange" : (255,163,47),
-        "yellow" : (255,236,33),
-        "green" : (147,240,59),
+        "red" : (255,0,0),         #RGB tuples represent colors using three values: red, green, and blue.  
+        "orange" : (255,163,47),    #Each component can have a value between 0 and 255
+        "yellow" : (255,236,33),     #0 represents no intensity of that color   
+        "green" : (147,240,59),       #255 represents the maximum intensity.
         "blue" : (55,138,255),
         "pink" : (255,119,253),
         "purple" : (149,82,234)
@@ -207,26 +210,26 @@ while True:
 
     #reset game and timer
     if newGame:
-        board = Board()
-        tetromino = board.generatePiece()
-        tetrominonext=board.generatePiece()
-        draw.drawStartScreen(board)
-        timer_seconds=10
+        board = Board() # Create a new instance of the Board class
+        tetromino = board.generatePiece() # Generate a new tetromino piece
+        tetrominonext=board.generatePiece() # Generate the next tetromino piece
+        draw.drawStartScreen(board) # Draw the start screen
+        timer_seconds=10 # Set the timer_seconds variable to 10
         
 
     #newGame screen loop
         while newGame:
-            pygame.display.update()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    newGame = False
-                    pygame.quit()
-                    sys.exit()
-                keyInput = pygame.key.get_pressed()
-                if keyInput[pygame.K_h]:
-                    newGame = False
-                if keyInput[pygame.K_a]:
-                    newGame = False
+            pygame.display.update() # Update the display
+            for event in pygame.event.get(): # Iterate over all events in the event queue
+                if event.type == pygame.QUIT: # If the user quits the game
+                    newGame = False # Exit the newGame loop
+                    pygame.quit() # Quit pygame
+                    sys.exit() # Exit the script
+                keyInput = pygame.key.get_pressed() # Get the current state of all keyboard keys
+                if keyInput[pygame.K_h]: # If the 'H' key is pressed
+                    newGame = False # Exit the newGame loop
+                if keyInput[pygame.K_a]: # If the 'A' key is pressed
+                    newGame = False # Exit the newGame loop
 
     #Pause screen loop
     while paused:
