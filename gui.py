@@ -23,6 +23,7 @@ class Board :#defining functions for the tetris game's grid
         self.colour = colour
         self.width = 10
         self.height = 20
+        self.score = 0
         self.linesCleared = 0 #to keep track of score
         self.emptyGrid() #creating a 2D list to represent the grid.
         self.pieceList = [] #creating an array containing the tetromino pieces. Each tetromino is specified by the coordinates of its color.
