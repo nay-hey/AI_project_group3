@@ -10,10 +10,12 @@ height = 25* blockSize
 width=height+10
 screen = pygame.display.set_mode((width, height))#initializes the game screen with given dimensions
 pygame.display.set_caption("Tetris_group3")#sets the title of the screen
-
+bg = pygame.image.load('bg.jpg').convert()
+screen.blit(bg,(0,0))
 clock = pygame.time.Clock()#we need this to time the game and control frame rate (how fast the game progresses)
 
-timer_seconds=10 #the game is timed using this variable as a counter and  gets over after these many seconds
+time=10
+timer_seconds=time #the game is timed using this variable as a counter and  gets over after these many seconds
 
 class Board :#defining functions for the tetris game's grid
 
@@ -61,7 +63,7 @@ class Draw:
         self.boardRect = pygame.Rect(self.boardOffset*blockSize, self.boardOffset*blockSize, (self.boardWidth*blockSize
                                                                      ) + self.boardOutline, height-self.boardOffset)
         #pygame.Rect(x,y,w,h) creates a rectangle object of width w and height h whose top left corner is at position x,y 
-        self.fontColour = (255, 0, 125) #font colour
+        self.fontColour = (255, 0, 50) #font colour
 
     def drawBoard(self, board):
 
@@ -84,7 +86,7 @@ class Draw:
     def getScaledCoords1(self, vertexCoords):#scaled coord of display for next tetromino at side of the grid
         copyCoords = copy.deepcopy(vertexCoords)
         for coord in copyCoords:
-            coord[0] = (coord[0] + self.boardWidth+self.boardOffset)*blockSize
+            coord[0] = (coord[0] + self.boardWidth+self.boardOffset-1)*blockSize
             coord[1] = (coord[1]+self.boardOffset+2)*blockSize
         return copyCoords
     def drawTetromino1(self, tetromino):
@@ -95,65 +97,56 @@ class Draw:
 
     
     def drawStats(self, board):
-        fontSize = int(blockSize)
-        gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0],size=fontSize)
-        nextText = gameFont.render("Next piece", True, self.fontColour)
+        fontSize = int(1.5*blockSize)# Determine font size
+        gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0],size=fontSize, bold=True)# Load game font
+        nextText = gameFont.render("Next piece", True, self.fontColour)# Render text
         time = gameFont.render(str(timer_seconds), True, self.fontColour)
         timeText = gameFont.render("Time remaining", True, self.fontColour)
         lineNum = gameFont.render(str(board.linesCleared), True, self.fontColour)
         lineText = gameFont.render("Lines cleared", True, self.fontColour)
-        pauseText=gameFont.render("Press P for game menu", True, self.fontColour)
+        pauseText=gameFont.render("Press P to pause", True, self.fontColour)
         nextYPos = int(board.height*0.2)
         timeYPos = nextYPos + 6
-        lineYPos = timeYPos + 3
-        pauseYpos = lineYPos + 3
-        screen.blit(nextText, ((self.boardOffset+12)*blockSize, (nextYPos)*blockSize))
-        screen.blit(time, ((self.boardOffset+12)*blockSize, (timeYPos+1)*blockSize))
-        screen.blit(timeText, ((self.boardOffset+12)*blockSize, (timeYPos)*blockSize))
-        screen.blit(lineText, ((self.boardOffset+12)*blockSize, lineYPos*blockSize))
-        screen.blit(lineNum, ((self.boardOffset+12)*blockSize, (lineYPos+1)*blockSize))
-        screen.blit(pauseText, ((self.boardOffset+12)*blockSize, pauseYpos*blockSize))
-        
-    def drawGameOver(self, board):
-        fontSize = int(2 * blockSize) 
-        gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0],size=fontSize) # Get a font object with the system's first available font at the specified size
-        # Render "GAME OVER" text using the font, antialiasing enabled, with specified font color
-        gameOverText = gameFont.render("GAME OVER", True, self.fontColour) # Render "GAME OVER" text using the font, antialiasing enabled, with specified font color
-        # Blit the rendered "GAME OVER" text onto the screen at a specific position
-        screen.blit(gameOverText, (blockSize*self.boardOffset, ((board.height/2+self.boardOffset)-1)*blockSize))
+        lineYPos = timeYPos + 4
+        pauseYpos = lineYPos + 4
+        screen.blit(nextText, ((self.boardOffset+11)*blockSize, (nextYPos)*blockSize))# Blit text onto the screen
+        screen.blit(time, ((self.boardOffset+15)*blockSize, (timeYPos+1.5)*blockSize))
+        screen.blit(timeText, ((self.boardOffset+11)*blockSize, (timeYPos)*blockSize))
+        screen.blit(lineText, ((self.boardOffset+11)*blockSize, lineYPos*blockSize))
+        screen.blit(lineNum, ((self.boardOffset+15)*blockSize, (lineYPos+1.5)*blockSize))
+        screen.blit(pauseText, ((self.boardOffset+11)*blockSize, pauseYpos*blockSize))
+    def draw_text_with_highlight(self,text, x, y,fontSize = int(2 * blockSize),highlight_color = (250, 200, 0)):
+        # Render the text
+        gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0],size=fontSize,bold=True)# Get a font object with the system's first available font at the specified size
+        text_surface = gameFont.render(text, True, self.fontColour)# Render text using the font, antialiasing enabled, with specified font color
 
+        # Create a rectangle with the same size as the text
+        rect = text_surface.get_rect()
+        rect.topleft = (x, y)
+        # Draw the highlight rectangle
+        pygame.draw.rect(screen, highlight_color, rect)
+
+        # Draw the text on top of the highlight and blit the rendered text onto the screen at a specific position
+        screen.blit(text_surface, rect.topleft)
+    def drawGameOver(self, board):
+        self.draw_text_with_highlight("GAME OVER", blockSize*(self.boardWidth/2+2), (board.height/2-1)*blockSize)
+        self.draw_text_with_highlight("PRESS N", blockSize*(self.boardWidth/2+3), (board.height/2+2)*blockSize)
     def drawStartScreen(self, board):
-        fontSize = int(2 * blockSize) # Determine font size
-        gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0],size=fontSize)# Load game font
-        tetrisText = gameFont.render("WELCOME TO TETRIS!", False, self.fontColour)# Render "WELCOME TO TETRIS!" text
-        aText = gameFont.render("PRESS  A  :  AI MODE", True, self.fontColour) # Render "PRESS A : AI MODE" text
-        hText = gameFont.render("PRESS  H  :  HUMAN", True, self.fontColour) # Render "PRESS H : HUMAN" text
-        screen.blit(tetrisText, ((self.boardWidth//2-1.5)*blockSize, ((board.height/2)-5)*blockSize)) # Blit "WELCOME TO TETRIS!" text onto the screen
-        screen.blit(aText, ((self.boardWidth//2-1.5)*blockSize, ((board.height/2))*blockSize)) # Blit "PRESS A : AI MODE" text onto the screen
-        screen.blit(hText, ((self.boardWidth//2-1.5)*blockSize, ((board.height/2)+self.boardOffset+1)*blockSize)) # Blit "PRESS H : HUMAN" text onto the screen
-        
+        self.draw_text_with_highlight("WELCOME TO TETRIS!", (self.boardWidth//2-1.5)*blockSize, ((board.height/2)-5)*blockSize,highlight_color = (20, 0, 200))
+        self.draw_text_with_highlight("PRESS  A  :  AI MODE", (self.boardWidth//2-1)*blockSize, (board.height/2)*blockSize,highlight_color = (20, 200, 20))
+        self.draw_text_with_highlight("PRESS  H  :  HUMAN", (self.boardWidth//2-0.7)*blockSize, ((board.height/2)+self.boardOffset+1)*blockSize,highlight_color = (100, 190, 200))
+
     def drawPauseScreen(self):
-        fontSize = int(2 * blockSize)
-        gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0],size=fontSize)
-        pauseText = gameFont.render("PAUSED", True, self.fontColour)
-        screen.blit(pauseText, ((self.boardWidth//2+self.boardOffset-0.5)*blockSize, (5*blockSize)))
-        fontSize = int(blockSize)
-        gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0],size=fontSize)
-        newText = gameFont.render("N:                        New Game", True, self.fontColour)
-        escText = gameFont.render("P:                        Pause/Unpause", True, self.fontColour)
-        leftText = gameFont.render("Left Arrow:         Move Left", True, self.fontColour)
-        rightText = gameFont.render("Right Arrow:      Move Right", True, self.fontColour)
-        upText = gameFont.render("Up Arrow:          Rotate", True, self.fontColour)
-        enterText = gameFont.render("Space:               Hard Drop", True, self.fontColour)
-        screen.blit(newText, ((self.boardWidth//2+self.boardOffset-2)*blockSize, (10*blockSize)))
-        screen.blit(escText, ((self.boardWidth//2+self.boardOffset-2)*blockSize, (11*blockSize)))
-        screen.blit(leftText, ((self.boardWidth//2+self.boardOffset-2)*blockSize, (12*blockSize)))
-        screen.blit(rightText, ((self.boardWidth//2+self.boardOffset-2)*blockSize, (13*blockSize)))
-        screen.blit(upText, ((self.boardWidth//2+self.boardOffset-2)*blockSize, (14*blockSize)))
-        screen.blit(enterText, ((self.boardWidth//2+self.boardOffset-2)*blockSize, (15*blockSize)))
+        self.draw_text_with_highlight("Game Menu!", (self.boardWidth//2+self.boardOffset-1)*blockSize, 3*blockSize,highlight_color = (80, 190, 200))
+        self.draw_text_with_highlight("N:                        New Game", (self.boardWidth//2)*blockSize, 7*blockSize, int(1.5*blockSize))
+        self.draw_text_with_highlight("P:                        Pause/Unpause", (self.boardWidth//2 )*blockSize, 9*blockSize, int(1.5*blockSize))
+        self.draw_text_with_highlight("Left Arrow:         Move Left", (self.boardWidth//2 )*blockSize, 11*blockSize, int(1.5*blockSize))
+        self.draw_text_with_highlight("Right Arrow:      Move Right", (self.boardWidth//2 )*blockSize, 13*blockSize, int(1.5*blockSize))
+        self.draw_text_with_highlight("Up Arrow:          Rotate", (self.boardWidth//2 )*blockSize, 15*blockSize, int(1.5*blockSize))
+        self.draw_text_with_highlight("Space:               Hard Drop", (self.boardWidth//2 )*blockSize, 17*blockSize,  int(1.5*blockSize))
 
     def refreshScreen(self, board, tetromino,tetrominonext):
-        screen.fill("Black")#background surrounfing the grid
+        screen.fill("Black")#Clears screen by filling the screen with black color
         self.drawBoard(board)#creating the grid
         self.drawTetromino(tetromino)
         self.drawStats(board)
@@ -163,14 +156,14 @@ class Draw:
 class Tetromino():
     # Dictionary mapping color names to RGB tuples
     Colours = {
+        
         "red" : (255,0,0),         #RGB tuples represent colors using three values: red, green, and blue.  
         "orange" : (255,163,47),    #Each component can have a value between 0 and 255
         "yellow" : (255,236,33),     #0 represents no intensity of that color   
         "green" : (147,240,59),       #255 represents the maximum intensity.
         "blue" : (55,138,255),
         "pink" : (255,119,253),
-        "purple" : (149,82,234)
-    }
+        "purple" : (149,82,234)}
 
     Shapes = {
         #Every shape is 3 element list where the first element is list of vertices, 
@@ -204,27 +197,29 @@ gameOver = False
 paused = False
 draw = Draw()
 
-while True:
+def gameQuit(parameter=None):
+    if event.type == pygame.QUIT: # If the user quits the game
+        parameter = False # Exit the parameter's loop
+        pygame.quit() # Quit pygame
+        sys.exit() # Exit the script
                 
-    screen.fill("Black")#Clears screen by filling the screen with black color
 
+while True:
     #reset game and timer
     if newGame:
         board = Board() # Create a new instance of the Board class
         tetromino = board.generatePiece() # Generate a new tetromino piece
         tetrominonext=board.generatePiece() # Generate the next tetromino piece
+        screen.blit(bg,(0,0))#refresh the background image
         draw.drawStartScreen(board) # Draw the start screen
-        timer_seconds=10 # Set the timer_seconds variable to 10
+        timer_seconds=time # Set the timer_seconds variable to initial value of time
         
 
     #newGame screen loop
         while newGame:
             pygame.display.update() # Update the display
             for event in pygame.event.get(): # Iterate over all events in the event queue
-                if event.type == pygame.QUIT: # If the user quits the game
-                    newGame = False # Exit the newGame loop
-                    pygame.quit() # Quit pygame
-                    sys.exit() # Exit the script
+                gameQuit(newGame)
                 keyInput = pygame.key.get_pressed() # Get the current state of all keyboard keys
                 if keyInput[pygame.K_h]: # If the 'H' key is pressed
                     newGame = False # Exit the newGame loop
@@ -233,13 +228,11 @@ while True:
 
     #Pause screen loop
     while paused:
+        screen.blit(bg,(0,0))
         draw.drawPauseScreen()
         pygame.display.update()
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                paused = False
-                pygame.quit()
-                sys.exit()
+            gameQuit(paused)
             keyInput = pygame.key.get_pressed()
             if keyInput[pygame.K_p]:
                 paused = False
@@ -254,7 +247,7 @@ while True:
     while (not any(gameFlags)):#while none of the game flags are true
         clock.tick(60)#tick(n) means the while loop and all code in it will run n times per second
         #Draw game elements to screen
-        
+        screen.fill("Black")#Clears screen by filling the screen with black color        
         draw.refreshScreen(board, tetromino,tetrominonext)
         
         counter+=1
@@ -262,13 +255,11 @@ while True:
             timer_seconds -= 1
         if timer_seconds == 0:
             gameOver=True
-            timer_seconds=10
+            timer_seconds=time#reset timer to initial value
         
         #Check for user input
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: 
-                pygame.quit()
-                sys.exit()
+            gameQuit()
             keyInput = pygame.key.get_pressed()
             if keyInput[pygame.K_p]:
                 paused = True
@@ -279,13 +270,11 @@ while True:
     tetromino=tetrominonext
     #Game over screen loop
     while gameOver:
+        screen.blit(bg,(0,0))#Clears screen by filling the screen with black color
         draw.drawGameOver(board)
         pygame.display.update()
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-                gameOver = False
+            gameQuit(gameOver)
             keyInput = pygame.key.get_pressed()
             if keyInput[pygame.K_n] or keyInput[pygame.K_p]:
                 newGame = True
