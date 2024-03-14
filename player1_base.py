@@ -20,32 +20,11 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
 
-SHAPE_COLORS = [
-    (255, 0, 0),
-    (0, 255, 0),
-    (0, 0, 255),
-    (255, 255, 0),
-    (255, 0, 255),
-    (0, 255, 255),
-    (255, 165, 0)
-]
-
-SHAPES = [
-    [[1, 1, 1, 1]],  # I
-    [[1, 1, 1], [0, 1, 0]],  # T
-    [[1, 1, 1], [1, 0, 0]],  # L
-    [[1, 1, 1], [0, 0, 1]],  # J
-    [[0, 1, 1], [1, 1, 0]],  # S
-    [[1, 1], [1, 1]],  # O
-    [[1, 1, 0], [0, 1, 1]]  # Z
-]
-
-
 class Board:  # defining functions for the tetris game's grid
 
     def __init__(self, colour="Black"):
         self.colour = colour
-        self.width = 10
+        self.width = 20
         self.height = 20
         self.score = 0
         self.linesCleared = 0  # to keep track of score
@@ -65,16 +44,6 @@ class Draw:
                                       (self.boardWidth * BLOCK_SIZE) + self.boardOutline,
                                       GRID_HEIGHT - self.boardOffset)
         self.fontColour = (255, 0, 50)  # font colour
-        self.Colours = {
-        
-        "red" : (255,0,0),         #RGB tuples represent colors using three values: red, green, and blue.  
-        "orange" : (255,163,47),    #Each component can have a value between 0 and 255
-        "yellow" : (255,236,33),     #0 represents no intensity of that color   
-        "green" : (147,240,59),       #255 represents the maximum intensity.
-        "blue" : (55,138,255),
-        "pink" : (255,119,253),
-        "purple" : (149,82,234)}
-    
     def draw_main_screen(self):
         self.draw_text_with_highlight("WELCOME TO TETRIS!", (self.boardWidth//2-1.5)*BLOCK_SIZE, ((GRID_HEIGHT/2)-5)*BLOCK_SIZE,highlight_color = (20, 0, 200))
         self.draw_text_with_highlight("PRESS  A  :  AI MODE", (self.boardWidth//2-1)*BLOCK_SIZE, (GRID_HEIGHT/2)*BLOCK_SIZE,highlight_color = (20, 200, 20))
@@ -135,7 +104,26 @@ class Draw:
             coord[1] = (coord[1]+self.boardOffset+2)*BLOCK_SIZE
         return copyCoords
     
+class Tetromino():
+    SHAPE_COLORS = [
+    (255, 0, 0),
+    (255,163,47),
+    (255,236,33),
+    (147,240,59),
+    (55,138,255),
+    (255,119,253),
+    (149,82,234)
+    ]
 
+    SHAPES = [
+        [[1, 1, 1, 1]],  # I - Red
+        [[2, 2, 2], [0, 2, 0]],  # T - Orange
+        [[3, 3, 3], [3, 0, 0]],  # L - Yellow
+        [[4, 4, 4], [0, 0, 4]],  # J - Green
+        [[0, 5, 5], [5, 5, 0]],  # S - Blue
+        [[6, 6], [6, 6]],  # O - Pink
+        [[7, 7, 0], [0, 7, 7]]  # Z - Purple
+    ]
 class Tetris:
     def __init__(self):
         self.clock = pygame.time.Clock()
@@ -149,13 +137,13 @@ class Tetris:
         self.drawer = Draw()
 
     def new_piece(self):
-        return random.choice(SHAPES)
+        return random.choice(Tetromino.SHAPES)
 
     def draw_grid(self):
         screen.fill(BLACK)
         for y in range(GRID_HEIGHT):
             for x in range(GRID_WIDTH):
-                color = WHITE if self.grid[y][x] == 0 else SHAPE_COLORS[self.grid[y][x] - 1]
+                color = WHITE if self.grid[y][x] == 0 else Tetromino.SHAPE_COLORS[self.grid[y][x] - 1]
                 pygame.draw.rect(screen, color, (x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
                 pygame.draw.rect(screen, GRAY, (x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), 1)
 
@@ -163,7 +151,7 @@ class Tetris:
         for y in range(len(piece)):
             for x in range(len(piece[y])):
                 if piece[y][x]:
-                    color = SHAPE_COLORS[piece[y][x] - 1]
+                    color = Tetromino.SHAPE_COLORS[piece[y][x] - 1]
                     pygame.draw.rect(screen, color,
                                      ((x + offset_x) * BLOCK_SIZE, (y + offset_y) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
                     pygame.draw.rect(screen, GRAY,
@@ -251,8 +239,9 @@ class Tetris:
 
             self.draw_grid()
             self.draw_piece(self.current_piece, self.piece_x, self.piece_y)
+            self.drawer.drawStats(self.board)
             pygame.display.update()
-            self.clock.tick(10)  # Adjust game speed
+            self.clock.tick(2)  # Adjust game speed
 
 if __name__ == "__main__":
     game = Tetris()
