@@ -3,19 +3,20 @@ import random, copy
 import sys
 
 # Define constants
-pygame.init()
+pygame.init()#initialising pygame
+
 display_h = pygame.display.Info().current_h  # system's height
-pygame.display.set_caption("Tetris_group3")  # sets the title of the screen
-GRID_WIDTH = 20
-GRID_HEIGHT = 20
-screen = pygame.display.set_mode((GRID_WIDTH * 30, GRID_HEIGHT * 30))  # initializes the game screen with given dimensions
-bg = pygame.image.load('bg.jpg').convert()
-screen.blit(bg, (0, 0))
 BLOCK_SIZE = display_h // 30
 SCREEN_HEIGHT = 25 * BLOCK_SIZE
 SCREEN_WIDTH = SCREEN_HEIGHT + 10
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))#initializes the game screen with given dimensions
+pygame.display.set_caption("Tetris_group3")  # sets the title of the screen
+bg = pygame.image.load('bg.jpg').convert()
+screen.blit(bg, (0, 0))
+
 time = 10
 timer_seconds = time  # the game is timed using this variable as a counter and  gets over after these many seconds
+
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (100, 100, 100)
@@ -24,17 +25,41 @@ class Board:  # defining functions for the tetris game's grid
 
     def __init__(self, colour="Black"):
         self.colour = colour
-        self.width = 20
-        self.height = 20
+        self.GRID_WIDTH = 10
+        self.GRID_HEIGHT = 20
         self.score = 0
         self.linesCleared = 0  # to keep track of score
-        # self.emptyGrid() #creating a 2D list to represent the grid.
+        #self.emptyGrid() #creating a 2D list to represent the grid.
         self.pieceList = []  # creating an array containing the tetromino pieces. Each tetromino is specified by the coordinates of its color.
-        # self.nextPiece=self.generatePiece() #the next piece that will come into play
+        #self.nextPiece=self.generatePiece() #the next piece that will come into play
+    '''
+    def emptyGrid(self):
+        self.grid = []#creating a 2D list to represent the grid. 
+        self.emptyRow = []
+        for x in range(self.width):
+            self.emptyRow.append(0)
+        for rowCount in range(self.height):
+            self.grid.append(self.emptyRow)
 
+    def centrePiece(self, tetromino):#this moves the given tetromino form its default position at top left corner, to middle of top row which is where the pieces shouuld appear from initially.
+        for coord in tetromino.vertexCoords:#iterating over the list of all vertex coordinates which are used to draw the piece.
+            coord[0] += (self.width/2)-2  #for x coordinate of each vertex it is shifted to the middle of the grid
+        tetromino.centre[0] += (self.width/2)-2 #tetromino.centre[0] is the x coordinate of the centre of tetromino and it is shifted by as much as the vertex is shifted to maintain shape of block
+        for coord in tetromino.blockCoords:#done for the block coordinates
+            coord[0] += (self.width/2)-2
+        
+    def generatePiece(self):
+        if (len(self.pieceList) == 0):
+            self.pieceList = list(Tetromino.Shapes.keys())
+            random.shuffle(self.pieceList)
+        tetromino = Tetromino(self.pieceList.pop())#returns a tetromino which is a 2d array of vertex coords, block coords and centre
+        self.centrePiece(tetromino)
+        return (tetromino)
+    '''
 
 class Draw:
     def __init__(self):
+        self.board = Board()
         self.height = 20
         self.boardWidth = 10
         self.boardOffset = 4  # leaves some left margin before start of the grid
@@ -42,12 +67,12 @@ class Draw:
         self.pieceOutline = (BLOCK_SIZE // 15) if (BLOCK_SIZE >= 15) else 1  # to see tetromino piece in board
         self.boardRect = pygame.Rect(self.boardOffset * BLOCK_SIZE, self.boardOffset * BLOCK_SIZE,
                                       (self.boardWidth * BLOCK_SIZE) + self.boardOutline,
-                                      GRID_HEIGHT - self.boardOffset)
+                                      self.board.GRID_HEIGHT - self.boardOffset)
         self.fontColour = (255, 0, 50)  # font colour
     def draw_main_screen(self):
-        self.draw_text_with_highlight("WELCOME TO TETRIS!", (self.boardWidth//2-1.5)*BLOCK_SIZE, ((GRID_HEIGHT/2)-5)*BLOCK_SIZE,highlight_color = (20, 0, 200))
-        self.draw_text_with_highlight("PRESS  A  :  AI MODE", (self.boardWidth//2-1)*BLOCK_SIZE, (GRID_HEIGHT/2)*BLOCK_SIZE,highlight_color = (20, 200, 20))
-        self.draw_text_with_highlight("PRESS  H  :  HUMAN", (self.boardWidth//2-0.7)*BLOCK_SIZE, ((GRID_HEIGHT/2)+self.boardOffset+1)*BLOCK_SIZE,highlight_color = (100, 190, 200))
+        self.draw_text_with_highlight("WELCOME TO TETRIS!", (self.boardWidth//2-1.5)*BLOCK_SIZE, ((self.board.GRID_HEIGHT/2)-5)*BLOCK_SIZE,highlight_color = (20, 0, 200))
+        self.draw_text_with_highlight("PRESS  A  :  AI MODE", (self.boardWidth//2-1)*BLOCK_SIZE, (self.board.GRID_HEIGHT/2)*BLOCK_SIZE,highlight_color = (20, 200, 20))
+        self.draw_text_with_highlight("PRESS  H  :  HUMAN", (self.boardWidth//2-0.7)*BLOCK_SIZE, ((self.board.GRID_HEIGHT/2)+self.boardOffset+1)*BLOCK_SIZE,highlight_color = (100, 190, 200))
     def drawGameOver(self, board):
         self.draw_text_with_highlight("GAME OVER", BLOCK_SIZE*(self.boardWidth/2+2), (board.height/2-1)*BLOCK_SIZE)
         self.draw_text_with_highlight("PRESS N", BLOCK_SIZE*(self.boardWidth/2+3), (board.height/2+2)*BLOCK_SIZE)
@@ -71,7 +96,7 @@ class Draw:
         lineNum = gameFont.render(str(board.linesCleared), True, self.fontColour)
         lineText = gameFont.render("Lines cleared", True, self.fontColour)
         pauseText=gameFont.render("Press P to pause", True, self.fontColour)
-        nextYPos = int(board.height*0.2)
+        nextYPos = int(self.height*0.2)
         timeYPos = nextYPos + 6
         lineYPos = timeYPos + 4
         pauseYpos = lineYPos + 4
@@ -126,23 +151,23 @@ class Tetromino():
     ]
 class Tetris:
     def __init__(self):
+        self.board = Board()  # Instantiate Board object
+        self.drawer = Draw()
         self.clock = pygame.time.Clock()
-        self.grid = [[0] * GRID_WIDTH for _ in range(GRID_HEIGHT)]
+        self.grid = [[0] * self.board.GRID_WIDTH for _ in range(self.board.GRID_HEIGHT)]
         self.current_piece = self.new_piece()
         self.score = 0
         self.game_over = False
-        self.piece_x = GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
+        self.piece_x = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
         self.piece_y = 0
-        self.board = Board()  # Instantiate Board object
-        self.drawer = Draw()
 
     def new_piece(self):
         return random.choice(Tetromino.SHAPES)
 
     def draw_grid(self):
         screen.fill(BLACK)
-        for y in range(GRID_HEIGHT):
-            for x in range(GRID_WIDTH):
+        for y in range(self.board.GRID_HEIGHT):
+            for x in range(self.board.GRID_WIDTH):
                 color = WHITE if self.grid[y][x] == 0 else Tetromino.SHAPE_COLORS[self.grid[y][x] - 1]
                 pygame.draw.rect(screen, color, (x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
                 pygame.draw.rect(screen, GRAY, (x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), 1)
@@ -162,7 +187,7 @@ class Tetris:
             self.piece_y += 1
         self.merge_piece()
         self.current_piece = self.new_piece()
-        self.piece_x = GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
+        self.piece_x = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
         self.piece_y = 0
         if self.check_collision(self.current_piece, self.piece_x, self.piece_y):
             self.game_over = True
@@ -173,7 +198,7 @@ class Tetris:
         else:
             self.merge_piece()
             self.current_piece = self.new_piece()
-            self.piece_x = GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
+            self.piece_x = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
             self.piece_y = 0
             if self.check_collision(self.current_piece, self.piece_x, self.piece_y):
                 self.game_over = True
@@ -195,8 +220,8 @@ class Tetris:
         for y in range(len(piece)):
             for x in range(len(piece[y])):
                 if piece[y][x] and (
-                        y + offset_y < 0 or y + offset_y >= GRID_HEIGHT or
-                        x + offset_x < 0 or x + offset_x >= GRID_WIDTH or
+                        y + offset_y < 0 or y + offset_y >= self.board.GRID_HEIGHT or
+                        x + offset_x < 0 or x + offset_x >= self.board.GRID_WIDTH or
                         self.grid[y + offset_y][x + offset_x] != 0
                 ):
                     return True
@@ -210,10 +235,10 @@ class Tetris:
 
     def clear_lines(self):
         lines_cleared = 0
-        for y in range(GRID_HEIGHT):
+        for y in range(self.board.GRID_HEIGHT):
             if all(self.grid[y]):
                 del self.grid[y]
-                self.grid.insert(0, [0] * GRID_WIDTH)
+                self.grid.insert(0, [0] * self.board.GRID_WIDTH)
                 lines_cleared += 1
         self.score += lines_cleared ** 2
 
@@ -241,7 +266,7 @@ class Tetris:
             self.draw_piece(self.current_piece, self.piece_x, self.piece_y)
             self.drawer.drawStats(self.board)
             pygame.display.update()
-            self.clock.tick(2)  # Adjust game speed
+            self.clock.tick(10)  # Adjust game speed
 
 if __name__ == "__main__":
     game = Tetris()
