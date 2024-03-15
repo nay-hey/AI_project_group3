@@ -175,7 +175,7 @@ class Tetris:
         self.clock = pygame.time.Clock()
         self.grid = [[0] * self.board.GRID_WIDTH for _ in range(self.board.GRID_HEIGHT)]
         self.next_piece = self.new_piece()
-        self.current_piece = self.next_piece
+        self.current_piece = self.new_piece()
         self.score = 0
         self.game_over = False
         self.paused = False
@@ -294,8 +294,8 @@ class Tetris:
                 self.clear_lines()
 
             self.draw_grid()
-            self.draw_piece(self.current_piece, self.piece_x, self.piece_y)
             self.draw_piece(self.next_piece, self.board.GRID_WIDTH + 2, 2)  # Draw next piece
+            self.draw_piece(self.current_piece, self.piece_x, self.piece_y)
             self.drawer.drawStats(self.board, timer_seconds)
             pygame.display.update()
             self.clock.tick(5)  # Adjust game speed
@@ -370,5 +370,5 @@ if __name__ == "__main__":
                 drawer.draw_text_with_highlight("PRESS N to play again", BLOCK_SIZE * (game.board.GRID_WIDTH // 2 - 2),
                                                 (game.board.GRID_HEIGHT // 2 + 6) * BLOCK_SIZE)  # Adjusted position for play again
                 pygame.display.update()
-
+                timer_seconds = time
 
