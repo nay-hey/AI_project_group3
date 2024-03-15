@@ -52,6 +52,12 @@ class Draw:
         gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
         score_text = gameFont.render("Score: " + str(score), True, fontColour)
         screen.blit(score_text, ((boardOffset + 11) * BLOCK_SIZE, (height / 2 - 2) * BLOCK_SIZE))
+
+    def draw_height(self, height, fontColour, boardOffset, height1):
+        fontSize = int(1.5 * BLOCK_SIZE)
+        gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
+        height_text = gameFont.render("Max Height: " + str(height), True, fontColour)
+        screen.blit(height_text, ((boardOffset + 11) * BLOCK_SIZE, (height1 / 2 - 4) * BLOCK_SIZE))
         
     def draw_main_screen(self):
         self.draw_text_with_highlight("WELCOME TO TETRIS!", (self.boardWidth // 2 - 1.5) * BLOCK_SIZE,
@@ -171,6 +177,7 @@ class Tetris:
         self.score=0
         self.piece_x = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
         self.piece_y = 0
+        self.height=0
 
     def new_piece(self):
         return random.choice(Tetromino.SHAPES)
@@ -199,13 +206,16 @@ class Tetris:
         while not self.check_collision(self.current_piece, self.piece_x, self.piece_y + 1):
             self.piece_y += 1
         self.merge_piece()
+        self.max_height(self.current_piece, self.piece_x, self.piece_y)
         self.current_piece = self.new_piece()
         self.piece_x = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
         self.piece_y = 0
+        self.score+=10
         if self.check_collision(self.current_piece, self.piece_x, self.piece_y):
             self.game_over = True
 
     def move_piece_down(self):
+        #self.max_height(self.current_piece, self.piece_x, self.piece_y)
         if not self.check_collision(self.current_piece, self.piece_x, self.piece_y + 1):
             self.piece_y += 1
         else:
@@ -213,6 +223,7 @@ class Tetris:
             self.current_piece = self.new_piece()
             self.piece_x = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
             self.piece_y = 0
+            self.score+=10
             if self.check_collision(self.current_piece, self.piece_x, self.piece_y):
                 self.game_over = True
 
@@ -239,40 +250,38 @@ class Tetris:
                 ):
                     return True
         return False
-
+    
     def merge_piece(self):
         for y in range(len(self.current_piece)):
             for x in range(len(self.current_piece[y])):
                 if self.current_piece[y][x]:
                     self.grid[y + self.piece_y][x + self.piece_x] = self.current_piece[y][x]
 
-    def clear_lines(self,lines_cleared):
+    def clear_lines(self):
+        lines_cleared = 0
         for y in range(self.board.GRID_HEIGHT):
             if all(self.grid[y]):
                 del self.grid[y]
                 self.grid.insert(0, [0] * self.board.GRID_WIDTH)
                 lines_cleared += 1
-        self.score += lines_cleared * 100
+                self.score += lines_cleared * 100
         self.board.linesCleared += lines_cleared 
 
-    def evaluate(self, piece, offset_x, offset_y):
-        temp_grid = copy.deepcopy(self.grid)
-        temp_piece_y = offset_y
-        while not self.check_collision(piece, offset_x, temp_piece_y + 1):
-            temp_piece_y += 1
-        temp_piece_y += 1
-        self.merge_piece()
-        self.current_piece = piece
-        self.piece_x = offset_x
-        self.piece_y = temp_piece_y
-        self.clear_lines(0)
-        score = self.score
-        self.grid = temp_grid
-        return score
+    def max_height(self, piece, offset_x, offset_y):
+        #for x in range(len(piece[0])):
+        column_heights = [0] * self.board.GRID_WIDTH
+        for y in range(len(piece)):
+            for x in range(len(piece[y])):
+                if piece[y][x]:
+                    column_heights[offset_x + x] = max(column_heights[offset_x + x], self.board.GRID_HEIGHT - (offset_y + y))
+        self.height = max(column_heights)
+        #if column_height >= self.height:
+          #  self.height = column_height
+            #self.height = offset_y + y
+
 
     def run(self):
         global timer_seconds
-        lines_cleared = 0
         while not self.game_over:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -285,22 +294,26 @@ class Tetris:
                         self.move_piece_right()
                     elif event.key == pygame.K_DOWN:
                         self.move_piece_down()
+                        self.max_height(self.current_piece, self.piece_x, self.piece_y)
                     elif event.key == pygame.K_UP:
                         self.rotate_piece()
                     elif event.key == pygame.K_SPACE:  # Added for drop hard feature
                         self.drop_piece_hard()
+                        #self.max_height(self.current_piece, self.piece_x, self.piece_y)
                     elif event.key == pygame.K_p:  # Pause/unpause when P key is pressed
                         self.paused = not self.paused
             if not self.paused:  # Only update the game if not paused
                 self.move_piece_down()
-                self.clear_lines(lines_cleared)
+                #self.max_height(self.current_piece, self.piece_x, self.piece_y)
+                self.clear_lines()
 
             self.draw_grid()
             self.draw_piece(self.current_piece, self.piece_x, self.piece_y)
             self.drawer.drawStats(self.board, timer_seconds)
             self.drawer.draw_score(self.score, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
+            self.drawer.draw_height(self.height, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
             pygame.display.update()
-            self.clock.tick(10)  # Adjust game speed
+            self.clock.tick(5)  # Adjust game speed
             if timer_seconds == 0:
                 self.game_over = True
             else:
