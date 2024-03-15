@@ -174,8 +174,8 @@ class Tetris:
         self.drawer = Draw()
         self.clock = pygame.time.Clock()
         self.grid = [[0] * self.board.GRID_WIDTH for _ in range(self.board.GRID_HEIGHT)]
-        self.next_piece = self.new_piece()
         self.current_piece = self.new_piece()
+        self.next_piece = self.new_piece()
         self.score = 0
         self.game_over = False
         self.paused = False
@@ -210,7 +210,8 @@ class Tetris:
         while not self.check_collision(self.current_piece, self.piece_x, self.piece_y + 1):
             self.piece_y += 1
         self.merge_piece()
-        self.current_piece = self.new_piece()
+        self.current_piece = self.next_piece  # Set current piece to next piece
+        self.next_piece = self.new_piece()  # Generate new random piece for next piece    
         self.piece_x = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
         self.piece_y = 0
         if self.check_collision(self.current_piece, self.piece_x, self.piece_y):
@@ -221,7 +222,8 @@ class Tetris:
             self.piece_y += 1
         else:
             self.merge_piece()
-            self.current_piece = self.new_piece()
+            self.current_piece = self.next_piece  # Set current piece to next piece
+            self.next_piece = self.new_piece()  # Generate new random piece for next piece
             self.piece_x = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
             self.piece_y = 0
             if self.check_collision(self.current_piece, self.piece_x, self.piece_y):
@@ -292,9 +294,13 @@ class Tetris:
             if not self.paused:  # Only update the game if not paused
                 self.move_piece_down()
                 self.clear_lines()
-
             self.draw_grid()
-            self.draw_piece(self.next_piece, self.board.GRID_WIDTH + 2, 2)  # Draw next piece
+            fontSize = int(1.5 * BLOCK_SIZE)
+            nextYPos = int(self.drawer.height * 0.2)
+            gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
+            nextText = gameFont.render("Next piece", True, self.drawer.fontColour)
+            self.draw_piece(self.next_piece, self.board.GRID_WIDTH + 7, 6)  # Draw next piece
+            screen.blit(nextText, ((self.drawer.boardOffset + 12) *BLOCK_SIZE, (nextYPos) * BLOCK_SIZE))
             self.draw_piece(self.current_piece, self.piece_x, self.piece_y)
             self.drawer.drawStats(self.board, timer_seconds)
             pygame.display.update()
