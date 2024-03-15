@@ -67,6 +67,14 @@ class Draw:
         gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
         height_text = gameFont.render("Max Height: " + str(height), True, fontColour)
         screen.blit(height_text, ((boardOffset + 11) * BLOCK_SIZE, (height1 / 2 - 4) * BLOCK_SIZE))
+
+    def drawHoles(self, num_holes, fontColour, boardOffset, height):
+        fontSize = int(1.5 * BLOCK_SIZE)
+        gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
+        holeText = gameFont.render("Holes:"+ str(num_holes), True, fontColour)
+        screen.blit(holeText, ((boardOffset + 11) * BLOCK_SIZE, (height / 2 - 8) * BLOCK_SIZE))
+       # holeNum = gameFont.render(str(num_holes), True, fontColour)
+        #screen.blit(holeNum, ((boardOffset + 15) * BLOCK_SIZE, (height / 2 - 6) * BLOCK_SIZE))
         
     def draw_main_screen(self):
         self.draw_text_with_highlight("WELCOME TO TETRIS!", (self.boardWidth // 2 - 1.5) * BLOCK_SIZE,
@@ -129,6 +137,7 @@ class Draw:
         high_score_text = gameFont.render("High Score: {}".format(board.high_score), True, self.fontColour)
         screen.blit(score_text, ((self.boardOffset + 11) * BLOCK_SIZE, (pauseYpos + 4) * BLOCK_SIZE))
         screen.blit(high_score_text, ((self.boardOffset + 11) * BLOCK_SIZE, (pauseYpos + 6) * BLOCK_SIZE))
+        
 
         time_surface = gameFont.render(str(timer_seconds), True, self.fontColour)
         screen.blit(time_surface, ((self.boardOffset + 15) * BLOCK_SIZE, (timeYPos + 1.5) * BLOCK_SIZE))
@@ -224,6 +233,7 @@ class Tetris:
         self.next_piece = self.new_piece()  # Generate new random piece for next piece    
         self.piece_x = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
         self.piece_y = 0
+        self.score +=20
         if self.check_collision(self.current_piece, self.piece_x, self.piece_y):
             self.game_over = True
 
@@ -236,6 +246,7 @@ class Tetris:
             self.next_piece = self.new_piece()  # Generate new random piece for next piece
             self.piece_x = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
             self.piece_y = 0
+            self.score +=20
             if self.check_collision(self.current_piece, self.piece_x, self.piece_y):
                 self.game_over = True
 
@@ -264,10 +275,14 @@ class Tetris:
         return False
 
     def merge_piece(self):
+    
         for y in range(len(self.current_piece)):
-            for x in range(len(self.current_piece[y])):
-                if self.current_piece[y][x]:
-                    self.grid[y + self.piece_y][x + self.piece_x] = self.current_piece[y][x]
+                for x in range(len(self.current_piece[y])):
+                    if self.current_piece[y][x]:
+                        self.grid[y + self.piece_y][x + self.piece_x] = self.current_piece[y][x]
+                    else:
+                        self.grid[y][x] = 0
+
 
     def clear_lines(self):
         lines_cleared = 0
@@ -276,10 +291,11 @@ class Tetris:
                 del self.grid[y]
                 self.grid.insert(0, [0] * self.board.GRID_WIDTH)
                 lines_cleared += 1
-        self.score += lines_cleared ** 2
+        self.score += lines_cleared * 100
         self.board.linesCleared += lines_cleared 
         self.board.high_score = max(self.board.high_score, self.board.score)  # Update high score
         self.board.save_high_score()  # Save high score to file
+
     def max_height(self, piece, offset_x, offset_y):
         #for x in range(len(piece[0])):
         column_heights = [0] * self.board.GRID_WIDTH
@@ -288,10 +304,21 @@ class Tetris:
                 if piece[y][x]:
                     column_heights[offset_x + x] = max(column_heights[offset_x + x], self.board.GRID_HEIGHT - (offset_y + y))
         self.height = max(column_heights)
+        return max(column_heights)
         #if column_height >= self.height:
           #  self.height = column_height
             #self.height = offset_y + y
-
+        
+    def count_holes_in_range(self, max_height):
+        num_holes = 0
+        for x in range(self.board.GRID_WIDTH):  # Iterate over each column
+            hole_found = False  # Flag to indicate if a hole has been found in this column
+            for y in range(max_height, self.board.GRID_HEIGHT):  # Start from the top of the grid
+                if self.grid[y][x] != 0:  # If we encounter a filled cell
+                    hole_found = True  # Update flag to indicate that a filled cell has been found
+                elif hole_found:  # If a filled cell has been found and we encounter an empty cell
+                    num_holes += 1  # Count it as a hole
+        return num_holes
 
     def run(self):
         global timer_seconds
@@ -303,13 +330,13 @@ class Tetris:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
                         self.move_piece_left()
-                        self.max_height(self.current_piece, self.piece_x, self.piece_y)
+                        max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
                     elif event.key == pygame.K_RIGHT:
                         self.move_piece_right()
-                        self.max_height(self.current_piece, self.piece_x, self.piece_y)
+                        max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
                     elif event.key == pygame.K_DOWN:
                         self.move_piece_down()
-                        self.max_height(self.current_piece, self.piece_x, self.piece_y)
+                        max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
                     elif event.key == pygame.K_UP:
                         self.rotate_piece()
                     elif event.key == pygame.K_SPACE:  # Added for drop hard feature
@@ -332,6 +359,9 @@ class Tetris:
             self.drawer.draw_score(self.score, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
             filled_rows = sum(1 for row in self.grid if any(row))
             self.drawer.draw_height(filled_rows, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
+            max_height_range = (0, filled_rows)
+            num_holes = self.count_holes_in_range(filled_rows)
+            self.drawer.drawHoles(num_holes, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
             pygame.display.update()
             self.clock.tick(5)  # Adjust game speed
             if timer_seconds == 0:
@@ -407,3 +437,5 @@ if __name__ == "__main__":
                 pygame.display.update()
                 timer_seconds = time
 
+    
+    
