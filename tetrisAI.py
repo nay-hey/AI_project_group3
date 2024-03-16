@@ -275,7 +275,6 @@ class Tetris:
         return False
 
     def merge_piece(self):
-    
         for y in range(len(self.current_piece)):
                 for x in range(len(self.current_piece[y])):
                     if self.current_piece[y][x]:
@@ -313,13 +312,13 @@ class Tetris:
         num_holes = 0
         for x in range(self.board.GRID_WIDTH):  # Iterate over each column
             hole_found = False  # Flag to indicate if a hole has been found in this column
-            for y in range(max_height, self.board.GRID_HEIGHT):  # Start from the top of the grid
+            for y in range(self.board.GRID_HEIGHT-max_height, self.board.GRID_HEIGHT):  # Start from the top of the grid
                 if self.grid[y][x] != 0:  # If we encounter a filled cell
                     hole_found = True  # Update flag to indicate that a filled cell has been found
                 elif hole_found:  # If a filled cell has been found and we encounter an empty cell
                     num_holes += 1  # Count it as a hole
         return num_holes
-
+    
     def run(self):
         global timer_seconds
         while not self.game_over:
@@ -436,6 +435,9 @@ if __name__ == "__main__":
                                                 (game.board.GRID_HEIGHT // 2 + 6) * BLOCK_SIZE)  # Adjusted position for play again
                 pygame.display.update()
                 timer_seconds = time
+
+    
+    
 
     
     
