@@ -49,13 +49,13 @@ class Draw:
         self.board = Board()
         self.height = self.board.GRID_HEIGHT 
         self.boardWidth = 10
-        self.boardOffset = 4  # leaves some left margin before start of the grid
+        self.boardOffset = BLOCK_SIZE // 5  # leaves some left margin before start of the grid
         self.boardOutline = (BLOCK_SIZE // 15) if (BLOCK_SIZE >= 15) else 1  # to see individual cells in board
         self.pieceOutline = (BLOCK_SIZE // 15) if (BLOCK_SIZE >= 15) else 1  # to see tetromino piece in board
         self.boardRect = pygame.Rect(self.boardOffset * BLOCK_SIZE, self.boardOffset * BLOCK_SIZE,
                                       (self.boardWidth * BLOCK_SIZE) + self.boardOutline,
                                       self.board.GRID_HEIGHT - self.boardOffset)
-        self.fontColour = (255, 0, 50)  # font colour
+        self.fontColour = orange  # font colour
     def draw_score(self, score, fontColour, boardOffset, height):
         fontSize = int(1.5 * BLOCK_SIZE)
         gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
