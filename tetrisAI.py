@@ -107,8 +107,11 @@ class Draw:
                                       13 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
         self.draw_text_with_highlight("Up Arrow:          Rotate", (self.boardWidth // 2) * BLOCK_SIZE,
                                       15 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
-        self.draw_text_with_highlight("Space:               Hard Drop", (self.boardWidth // 2) * BLOCK_SIZE,
+        self.draw_text_with_highlight("Down Arrow:          Move down", (self.boardWidth // 2) * BLOCK_SIZE,
                                       17 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
+        
+        self.draw_text_with_highlight("Space:               Hard Drop", (self.boardWidth // 2) * BLOCK_SIZE,
+                                      19 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
 
     def drawBoard(self, board):
         pygame.draw.rect(screen, board.colour, self.boardRect)
