@@ -191,9 +191,11 @@ class Tetris:
     def __init__(self):
         self.board = Board()  # Instantiate Board object
         self.drawer = Draw()
+        self.value=0
         self.clock = pygame.time.Clock()
         self.grid = [[0] * self.board.GRID_WIDTH for _ in range(self.board.GRID_HEIGHT)]
         self.current_piece = self.new_piece()
+        #self.currentpiece1=copy.deepcopy(self.current_piece)
         self.next_piece = self.new_piece()
         self.score = 0
         self.game_over = False
@@ -203,6 +205,7 @@ class Tetris:
 
 
     def new_piece(self):
+        self.value+=1
         next_piece = random.choice(Tetromino.SHAPES)
         self.next_piece = next_piece  # Update next piece
         return next_piece
@@ -260,6 +263,19 @@ class Tetris:
             self.piece_x += 1
 
     def rotate_piece(self):
+        rotated_piece = list(zip(*self.current_piece[::-1]))
+        if not self.check_collision(rotated_piece, self.piece_x, self.piece_y):
+            self.current_piece = rotated_piece
+
+    def move_piece_left1(self,grid_copy):
+        if not self.check_collision(self.current_piece, self.piece_x - 1, self.piece_y):
+            self.piece_x -= 1
+
+    def move_piece_right1(self,grid_copy):
+        if not self.check_collision(self.current_piece, self.piece_x + 1, self.piece_y):
+            self.piece_x += 1
+
+    def rotate_piece1(self,grid_copy):
         rotated_piece = list(zip(*self.current_piece[::-1]))
         if not self.check_collision(rotated_piece, self.piece_x, self.piece_y):
             self.current_piece = rotated_piece
@@ -322,7 +338,7 @@ class Tetris:
     
     def calculate_height_after_move(self, move):
         # Make a copy of the grid
-        grid_copy = [row[:] for row in self.grid]
+        grid_copy = copy.deepcopy(self.grid)#[row[:] for row in self.grid]
 
         if move == "LEFT":
             self.move_piece_left(grid_copy)
@@ -350,7 +366,7 @@ class Tetris:
 
         return best_move
     
-    def AIPlayer(self):
+    def AIPlayer(self,tetris_copy):
         global timer_seconds
         possible_moves = ["LEFT", "RIGHT", "DOWN", "ROTATE"]
         while not self.game_over:
@@ -389,22 +405,26 @@ class Tetris:
                 timer_seconds -= 1
           
     
-    def run(self):
+    def run(self,tetris_copy):
         global timer_seconds
+        
         while not self.game_over:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
+                    
                     if event.key == pygame.K_LEFT:
                         self.move_piece_left()
+                        
                         max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
                     elif event.key == pygame.K_RIGHT:
                         self.move_piece_right()
                         max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
                     elif event.key == pygame.K_DOWN:
                         self.move_piece_down()
+                        
                         max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
                     elif event.key == pygame.K_UP:
                         self.rotate_piece()
@@ -417,6 +437,7 @@ class Tetris:
                 self.move_piece_down()  # Default behavior if AI player is not initialized
             self.clear_lines()
             self.draw_grid()
+            
             fontSize = int(1.5 * BLOCK_SIZE)
             nextYPos = int(self.drawer.height * 0.2)
             gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
@@ -431,6 +452,7 @@ class Tetris:
             max_height_range = (0, filled_rows)
             num_holes = self.count_holes_in_range(filled_rows)
             self.drawer.drawHoles(num_holes, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
+            print(tetris_copy.value)
             pygame.display.update()
             self.clock.tick(5)  # Adjust game speed
             if timer_seconds == 0:
@@ -438,12 +460,16 @@ class Tetris:
             else:
                 timer_seconds -= 1
 
+
+
 if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Tetris_group3")
     bg = pygame.image.load('bg.jpg').convert()
     game = Tetris()
+    tetris_copy=copy.copy(game)
+    print(tetris_copy.score)
     drawer = Draw()
     current_screen = "main"
     while True:
@@ -455,10 +481,10 @@ if __name__ == "__main__":
                 if current_screen == "main":
                     if event.key == pygame.K_h:
                         current_screen = "tetris"
-                        game.run()
+                        game.run(tetris_copy)
                     elif event.key == pygame.K_a:
                         current_screen = "tetris"
-                        game.AIPlayer()
+                        game.AIPlayer(tetris_copy)
                     elif event.key == pygame.K_p:  # Pause/unpause when P key is pressed
                         game.paused = not game.paused
                 elif current_screen == "tetris":
