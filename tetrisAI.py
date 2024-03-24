@@ -242,6 +242,16 @@ class Tetris:
         self.score +=20
         if self.check_collision(self.current_piece, self.piece_x, self.piece_y):
             self.game_over = True
+            
+    def drop_piece_hard1(self,current_piece,piece_x,piece_y,grid_copy):
+        while not self.check_collision(current_piece, piece_x, piece_y + 1,grid=grid_copy):
+            piece_y += 1
+        self.merge_piece(grid_copy,current_piece,piece_y,piece_x)
+        piece_x = self.board.GRID_WIDTH // 2 - len(current_piece[0]) // 2
+        piece_y = 0
+        self.score +=20
+        #if self.check_collision(current_piece, piece_x, piece_y,):
+         #   self.game_over = True
 
     def move_piece_down(self):
         if not self.check_collision(self.current_piece, self.piece_x, self.piece_y + 1):
@@ -303,7 +313,6 @@ class Tetris:
         return current_piece
 
     def check_collision(self, piece, offset_x, offset_y,grid=None):
-        
         if grid==None:
             grid=self.grid
         for y in range(len(piece)):
@@ -316,13 +325,21 @@ class Tetris:
                     return True
         return False
 
-    def merge_piece(self):
-        for y in range(len(self.current_piece)):
-                for x in range(len(self.current_piece[y])):
-                    if self.current_piece[y][x]:
-                        self.grid[y + self.piece_y][x + self.piece_x] = self.current_piece[y][x]
+    def merge_piece(self,grid=None,current_piece=None,piece_y=None,piece_x=None):
+        if grid==None:
+            grid=self.grid
+        if current_piece==None:
+            current_piece=self.current_piece
+        if piece_x==None:
+            piece_x=self.piece_x
+        if piece_y==None:
+            piece_y=self.piece_y
+        for y in range(len(current_piece)):
+                for x in range(len(current_piece[y])):
+                    if current_piece[y][x]:
+                        grid[y + piece_y][x + piece_x] = current_piece[y][x]
                     else:
-                        self.grid[y][x] = 0
+                        grid[y][x] = 0
 
 
     def clear_lines(self):
@@ -351,6 +368,7 @@ class Tetris:
         #if column_height >= self.height:
           #  self.height = column_height
             #self.height = offset_y + y
+          
     def max_height(self, piece, offset_x, offset_y):
         #for x in range(len(piece[0])):
         column_heights = [0] * self.board.GRID_WIDTH
@@ -364,20 +382,23 @@ class Tetris:
         return filled_rows
         return min(column_heights)
         
-    def count_holes_in_range(self, max_height,grid=None):
+    def count_holes_in_range(self, max_height=None,grid=None):
         num_holes = 0
         if grid == None:
             grid=self.grid
+        if max_height==None:
+            max_height=sum(1  for row in grid if any(row))
+        print("max hi",max_height)
         for x in range(self.board.GRID_WIDTH):  # Iterate over each column
             hole_found = False  # Flag to indicate if a hole has been found in this column
-            for y in range(self.board.GRID_HEIGHT-max_height, self.board.GRID_HEIGHT):  # Start from the top of the grid
+            for y in range(self.board.GRID_HEIGHT-max_height, self.board.GRID_HEIGHT):  # Start from the top of the filled grid
                 if grid[y][x] != 0:  # If we encounter a filled cell
                     hole_found = True  # Update flag to indicate that a filled cell has been found
                 elif hole_found:  # If a filled cell has been found and we encounter an empty cell
                     num_holes += 1  # Count it as a hole
         return num_holes
     
-    def calculate_height_after_move1(self, grid_copy, move, current_piece, piece_x, piece_y):
+    def calculate_height_after_move(self, grid_copy, move, current_piece, piece_x, piece_y):
         if move == "LEFT":
             piece_x = self.move_piece_left(grid_copy,current_piece,piece_x,piece_y)  # Move one step to the left
         elif move == "RIGHT":
@@ -415,8 +436,47 @@ class Tetris:
 
         print(best_move)
         return best_move
+    
+    def get_best_move(self, grid_copy, current_piece, piece_x, piece_y, max_height):
+        possible_moves = ["LEFT", "RIGHT","ROTATE"]
+        best_move = None
+        best_holes = 200  # Initialize with current max height
+        original_grid=copy.deepcopy(grid_copy)
+        
+        for move in possible_moves:
+            if move in ["LEFT", "RIGHT"]:
+                # Calculate the height after moving the piece multiple steps
+                new_piece_x = piece_x
+                while True:
+                    new_piece_x = (self.move_piece_left(grid_copy,current_piece,new_piece_x,piece_y) if move == "LEFT" else self.move_piece_right(grid_copy,current_piece,new_piece_x,piece_y))
 
-    def calculate_height_after_move(self,grid_copy, move,current_piece,piece_x,piece_y):
+                    #drop piece
+                    self.drop_piece_hard1(current_piece,piece_x,piece_y,grid_copy)
+                    #print(grid_copy)
+                    new_holes = self.count_holes_in_range(grid=grid_copy)
+                    if new_piece_x == piece_x:
+                        print(new_holes,move, best_holes)
+                        if new_holes < best_holes:
+                            best_holes=new_holes
+                            best_move = move
+                            grid_copy=original_grid
+                            # Stop when either reached the original position or found a lower height
+                            break
+                        else:
+                            grid_copy=original_grid
+                            break
+                    piece_x = new_piece_x
+##            else:
+##                new_height = self.calculate_height_after_move(grid_copy, move, current_piece, piece_x, piece_y)
+##            
+##            if new_height < best_height:
+##                best_height = new_height
+##                best_move = move
+
+        print(best_move)
+        return best_move
+
+    def calculate_height_after_move1(self,grid_copy, move,current_piece,piece_x,piece_y):
         # Make a copy of the grid
         #grid_copy = copy.deepcopy(self.grid)#[row[:] for row in self.grid]
         #grid_copy=grid_copy
@@ -435,7 +495,27 @@ class Tetris:
         new_height = self.max_height(current_piece,piece_x,piece_y)
         return new_height
     
-    def get_best_move(self,grid_copy,current_piece,piece_x,piece_y,max_height):
+    def calc_holes_after_move(self,grid_copy, move,current_piece,piece_x,piece_y):
+        # Make a copy of the grid
+        #grid_copy = copy.deepcopy(self.grid)#[row[:] for row in self.grid]
+        #grid_copy=grid_copy
+        #piece_x_copy=
+        if move == "LEFT":
+            piece_x-=1
+            #piece_x=self.move_piece_left(grid_copy,current_piece,piece_x,piece_y)
+        if move == "RIGHT":
+            piece_x+=1
+            #piece_x=self.move_piece_right(grid_copy,current_piece,piece_x,piece_y)
+        if move == "ROTATE":
+            current_piece=self.rotate_piece(grid_copy,current_piece,piece_x,piece_y)
+        #move_piece_left(self, grid=None, current_piece=None, piece_x=None,piece_y=None)
+        # Calculate the maximum height in the grid after the move
+        #max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
+        new_height = self.count_holes_in_range(grid_copy)
+        return new_height
+        
+    
+    def get_best_move1(self,grid_copy,current_piece,piece_x,piece_y,max_height):
         possible_moves = ["LEFT", "RIGHT","ROTATE"]
         best_move = None
         best_height = max_height  # Initialize with current max height
@@ -573,6 +653,7 @@ class Tetris:
                 piece_y_copy=copy.deepcopy(self.piece_y)
                 print(piece_x_copy)
                 max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
+                #get_best_move(self, grid_copy, current_piece, piece_x, piece_y, max_height)
                 move= self.get_best_move(grid_copy,current_piece_copy,piece_x_copy,piece_y_copy,max_height)            
                 if move=="LEFT":
                     self.piece_x=self.move_piece_left()
@@ -580,6 +661,35 @@ class Tetris:
                     self.piece_x=self.move_piece_right()
                 if move=="ROTATE":
                     self.current_piece=self.rotate_piece()
+
+##                def get_best_move_cleared(self,grid_copy,current_piece,piece_x,piece_y,max_height=None):
+##                    for move in ["LEFT", 'RIGHT','ROTATE']:
+##                        score_before=0
+##                        for row in grid_copy:
+##                            score_row=sum(row)
+##                            if score_row>score_before:
+##                                score_before=score_row
+##                                
+##                        final_move=None
+##                        if move == "LEFT":
+##                            piece_x = self.move_piece_left(grid_copy,current_piece,piece_x,piece_y)  # Move one step to the left
+##                        elif move == "RIGHT":
+##                            piece_x = self.move_piece_right(grid_copy,current_piece,piece_x,piece_y)  # Move one step to the right
+##                        elif move == "ROTATE":
+##                            # Update current_piece after rotation
+##                            current_piece = self.rotate_piece(grid_copy, current_piece, piece_x, piece_y)
+##                        while !check_collision(self,current_piece,piece_x,piece_y,grid_copy):
+##                            drop current piece on grid
+##                            score_row_final=0#after piece is dropped
+##                            for row in grid_copy:
+##                                score_row=sum(row)
+##                                if score_row>score_row_final:
+##                                    score_row_final=score_row
+##                                
+##                            if score_row_final>score_before:
+##                                final_move=move
+                                
+                    
 ##                
 ##                grid_copy=copy.copy(self.grid)
 ##                current_piece_copy=copy.copy(self.current_piece)
@@ -627,9 +737,6 @@ if __name__ == "__main__":
                         print("Restarting the game...")
                         game = Tetris()  # Reset the game
                         current_screen = "main"
-
-
-
 
         if current_screen == "main":
                 screen.blit(bg, (0, 0))  # Blit the background image onto the screen
