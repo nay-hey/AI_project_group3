@@ -388,7 +388,7 @@ class Tetris:
             grid=self.grid
         if max_height==None:
             max_height=sum(1  for row in grid if any(row))
-        print("max hi",max_height)
+            print("max hi",max_height)
         for x in range(self.board.GRID_WIDTH):  # Iterate over each column
             hole_found = False  # Flag to indicate if a hole has been found in this column
             for y in range(self.board.GRID_HEIGHT-max_height, self.board.GRID_HEIGHT):  # Start from the top of the filled grid
@@ -406,12 +406,12 @@ class Tetris:
         elif move == "ROTATE":
             # Update current_piece after rotation
             current_piece = self.rotate_piece(grid_copy, current_piece, piece_x, piece_y)
-        print(current_piece)
+        #print(current_piece)
         # Calculate the maximum height in the grid after the move
         new_height = self.max_height(current_piece, piece_x, piece_y)
         return new_height
 
-    def get_best_move1(self, grid_copy, current_piece, piece_x, piece_y, max_height):
+    '''def get_best_move1(self, grid_copy, current_piece, piece_x, piece_y, max_height):
         possible_moves = ["LEFT", "RIGHT","ROTATE"]
         best_move = None
         best_height = max_height  # Initialize with current max height
@@ -435,7 +435,7 @@ class Tetris:
                 best_move = move
 
         print(best_move)
-        return best_move
+        return best_move'''
     
     def get_best_move(self, grid_copy, current_piece, piece_x, piece_y, max_height):
         possible_moves = ["LEFT", "RIGHT","ROTATE"]
@@ -453,7 +453,9 @@ class Tetris:
                     #drop piece
                     self.drop_piece_hard1(current_piece,piece_x,piece_y,grid_copy)
                     #print(grid_copy)
-                    new_holes = self.count_holes_in_range(grid=grid_copy)
+                    max_height=sum(1  for row in grid_copy if any(row))
+            
+                    new_holes = self.count_holes_in_range(max_height,grid=grid_copy)
                     if new_piece_x == piece_x:
                         print(new_holes,move, best_holes)
                         if new_holes < best_holes:
@@ -463,7 +465,6 @@ class Tetris:
                             # Stop when either reached the original position or found a lower height
                             break
                         else:
-                            grid_copy=original_grid
                             break
                     piece_x = new_piece_x
 ##            else:
