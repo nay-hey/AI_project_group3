@@ -49,30 +49,32 @@ class Draw:
         self.board = Board()
         self.height = self.board.GRID_HEIGHT 
         self.boardWidth = 10
-        self.boardOffset = 4  # leaves some left margin before start of the grid
+        self.boardOffset = (BLOCK_SIZE // 5) # leaves some left margin before start of the grid
         self.boardOutline = (BLOCK_SIZE // 15) if (BLOCK_SIZE >= 15) else 1  # to see individual cells in board
         self.pieceOutline = (BLOCK_SIZE // 15) if (BLOCK_SIZE >= 15) else 1  # to see tetromino piece in board
         self.boardRect = pygame.Rect(self.boardOffset * BLOCK_SIZE, self.boardOffset * BLOCK_SIZE,
                                       (self.boardWidth * BLOCK_SIZE) + self.boardOutline,
                                       self.board.GRID_HEIGHT - self.boardOffset)
         self.fontColour = (255, 0, 50)  # font colour
+        self.fontColour1="orange"
     def draw_score(self, score, fontColour, boardOffset, height):
         fontSize = int(1.5 * BLOCK_SIZE)
         gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
-        score_text = gameFont.render("Score: " + str(score), True, fontColour)
+        score_text = gameFont.render("Score: " + str(score), True, self.fontColour1)
         screen.blit(score_text, ((boardOffset + 11) * BLOCK_SIZE, (height / 2 - 2) * BLOCK_SIZE))
 
     def draw_height(self, height, fontColour, boardOffset, height1):
         fontSize = int(1.5 * BLOCK_SIZE)
         gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
-        height_text = gameFont.render("Max Height: " + str(height), True, fontColour)
+        height_text = gameFont.render("Max Height: " + str(height), True, self.fontColour1)
         screen.blit(height_text, ((boardOffset + 11) * BLOCK_SIZE, (height1 / 2 - 4) * BLOCK_SIZE))
 
     def drawHoles(self, num_holes, fontColour, boardOffset, height):
         fontSize = int(1.5 * BLOCK_SIZE)
         gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
-        holeText = gameFont.render("Holes:"+ str(num_holes), True, fontColour)
-        screen.blit(holeText, ((boardOffset + 11) * BLOCK_SIZE, (height / 2 - 8) * BLOCK_SIZE))
+        holeText = gameFont.render("Holes:"+ str(num_holes), True, self.fontColour1)
+        pauseYpos=int(self.height * 0.2)+14
+        screen.blit(holeText, ((self.boardOffset + 11) * BLOCK_SIZE, (pauseYpos + 2) * BLOCK_SIZE))
        # holeNum = gameFont.render(str(num_holes), True, fontColour)
         #screen.blit(holeNum, ((boardOffset + 15) * BLOCK_SIZE, (height / 2 - 6) * BLOCK_SIZE))
         
@@ -89,7 +91,7 @@ class Draw:
 
     def drawGameOver(self):
         self.draw_text_with_highlight("GAME OVER", BLOCK_SIZE * (self.boardWidth // 2 + 2),
-                                      (self.board.GRID_HEIGHT // 2 - 1) * BLOCK_SIZE)  # Update here
+                                      (self.board.GRID_HEIGHT // 2 - 2) * BLOCK_SIZE)  # Update here
  
 
 
@@ -106,8 +108,10 @@ class Draw:
                                       13 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
         self.draw_text_with_highlight("Up Arrow:          Rotate", (self.boardWidth // 2) * BLOCK_SIZE,
                                       15 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
-        self.draw_text_with_highlight("Space:               Hard Drop", (self.boardWidth // 2) * BLOCK_SIZE,
+        self.draw_text_with_highlight("Down Arrow:          Move down", (self.boardWidth // 2) * BLOCK_SIZE,
                                       17 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
+        self.draw_text_with_highlight("Space:               Hard Drop", (self.boardWidth // 2) * BLOCK_SIZE,
+                                      19 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
 
     def drawBoard(self, board):
         pygame.draw.rect(screen, board.colour, self.boardRect)
@@ -121,10 +125,10 @@ class Draw:
     def drawStats(self, board, timer_seconds):
         fontSize = int(1.5 * BLOCK_SIZE)
         gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
-        timeText = gameFont.render("Time remaining", True, self.fontColour)
-        lineNum = gameFont.render(str(board.linesCleared), True, self.fontColour)
-        lineText = gameFont.render("Lines cleared", True, self.fontColour)
-        pauseText = gameFont.render("Press P to pause", True, self.fontColour)
+        timeText = gameFont.render("Time remaining", True, self.fontColour1)
+        lineNum = gameFont.render(str(board.linesCleared), True, self.fontColour1)
+        lineText = gameFont.render("Lines cleared", True, self.fontColour1)
+        pauseText = gameFont.render("Press P to pause", True, self.fontColour1)
         nextYPos = int(self.height * 0.2)
         timeYPos = nextYPos + 6
         lineYPos = timeYPos + 4
@@ -133,13 +137,13 @@ class Draw:
         screen.blit(lineText, ((self.boardOffset + 11) * BLOCK_SIZE, lineYPos * BLOCK_SIZE))
         screen.blit(lineNum, ((self.boardOffset+15)*BLOCK_SIZE, (lineYPos+1.5)*BLOCK_SIZE))
         screen.blit(pauseText, ((self.boardOffset + 11) * BLOCK_SIZE, pauseYpos * BLOCK_SIZE))
-        score_text = gameFont.render("Score: {}".format(board.score), True, self.fontColour)
-        high_score_text = gameFont.render("High Score: {}".format(board.high_score), True, self.fontColour)
-        screen.blit(score_text, ((self.boardOffset + 11) * BLOCK_SIZE, (pauseYpos + 4) * BLOCK_SIZE))
-        screen.blit(high_score_text, ((self.boardOffset + 11) * BLOCK_SIZE, (pauseYpos + 6) * BLOCK_SIZE))
+        score_text = gameFont.render("Score: {}".format(board.score), True, self.fontColour1)
+        high_score_text = gameFont.render("High Score: {}".format(board.high_score), True, self.fontColour1)
+        #screen.blit(score_text, ((self.boardOffset + 11) * BLOCK_SIZE, (pauseYpos + 2) * BLOCK_SIZE))
+        screen.blit(high_score_text, ((self.boardOffset + 11) * BLOCK_SIZE, (pauseYpos + 4) * BLOCK_SIZE))
         
 
-        time_surface = gameFont.render(str(timer_seconds), True, self.fontColour)
+        time_surface = gameFont.render(str(timer_seconds), True, self.fontColour1)
         screen.blit(time_surface, ((self.boardOffset + 15) * BLOCK_SIZE, (timeYPos + 1.5) * BLOCK_SIZE))
 
     def draw_text_with_highlight(self, text, x, y, fontSize=int(2 * BLOCK_SIZE), highlight_color=(250, 200, 0)):
@@ -191,42 +195,40 @@ class Tetris:
     def __init__(self):
         self.board = Board()  # Instantiate Board object
         self.drawer = Draw()
-        self.value=0
         self.clock = pygame.time.Clock()
         self.grid = [[0] * self.board.GRID_WIDTH for _ in range(self.board.GRID_HEIGHT)]
         self.current_piece = self.new_piece()
-        #self.currentpiece1=copy.deepcopy(self.current_piece)
         self.next_piece = self.new_piece()
         self.score = 0
         self.game_over = False
         self.paused = False
-        self.piece_x = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2
+        self.piece_x = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2#offset for drawing the piece
         self.piece_y = 0
 
-
     def new_piece(self):
-        self.value+=1
         next_piece = random.choice(Tetromino.SHAPES)
         self.next_piece = next_piece  # Update next piece
         return next_piece
     def draw_grid(self):
         screen.fill(BLACK)
-        for y in range(self.board.GRID_HEIGHT):
-            for x in range(self.board.GRID_WIDTH):
+        for y1 in range(self.drawer.boardOffset-2,self.drawer.boardOffset-2+self.board.GRID_HEIGHT):
+            y=y1-self.drawer.boardOffset+2
+            for x1 in range(self.drawer.boardOffset-2,self.drawer.boardOffset-2+self.board.GRID_WIDTH):
+                x=x1-self.drawer.boardOffset+2
                 color = WHITE if self.grid[y][x] == 0 else Tetromino.SHAPE_COLORS[self.grid[y][x] - 1]
-                pygame.draw.rect(screen, color, (x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
-                pygame.draw.rect(screen, GRAY, (x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), 1)
-
+                pygame.draw.rect(screen, color, (x1 * BLOCK_SIZE, y1 * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE))
+                pygame.draw.rect(screen, GRAY, (x1 * BLOCK_SIZE, y1 * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), 1)
+                
     def draw_piece(self, piece, offset_x, offset_y):
         for y in range(len(piece)):
             for x in range(len(piece[y])):
                 if piece[y][x]:
                     color = Tetromino.SHAPE_COLORS[piece[y][x] - 1]
                     pygame.draw.rect(screen, color,
-                                     ((x + offset_x) * BLOCK_SIZE, (y + offset_y) * BLOCK_SIZE, BLOCK_SIZE,
+                                     ((x + offset_x+self.drawer.boardOffset-2) * BLOCK_SIZE, (y +self.drawer.boardOffset-2+ offset_y) * BLOCK_SIZE, BLOCK_SIZE,
                                       BLOCK_SIZE))
                     pygame.draw.rect(screen, GRAY,
-                                     ((x + offset_x) * BLOCK_SIZE, (y + offset_y) * BLOCK_SIZE, BLOCK_SIZE,
+                                     ((x + offset_x+self.drawer.boardOffset-2) * BLOCK_SIZE, (y +self.drawer.boardOffset-2+ offset_y) * BLOCK_SIZE, BLOCK_SIZE,
                                       BLOCK_SIZE), 1)
 
     def drop_piece_hard(self):
@@ -254,39 +256,62 @@ class Tetris:
             if self.check_collision(self.current_piece, self.piece_x, self.piece_y):
                 self.game_over = True
 
-    def move_piece_left(self):
-        if not self.check_collision(self.current_piece, self.piece_x - 1, self.piece_y):
-            self.piece_x -= 1
+    def move_piece_left(self, grid=None, current_piece=None, piece_x=None,piece_y=None):
+        flag_x=0
+        if grid is None:
+            grid = self.grid
+        if current_piece is None:
+            current_piece = self.current_piece
+        if piece_x is None:
+            piece_x = self.piece_x
+            flag_x=1
+        if piece_y == None:
+            piece_y = self.piece_y
+        if not self.check_collision(current_piece, piece_x - 1, piece_y,grid):
+            piece_x -= 1
+        return piece_x
 
-    def move_piece_right(self):
-        if not self.check_collision(self.current_piece, self.piece_x + 1, self.piece_y):
-            self.piece_x += 1
+    def move_piece_right(self,grid=None, current_piece=None, piece_x=None,piece_y=None):
+        flag_x=0
+        if grid is None:
+            grid = self.grid
+        if current_piece is None:
+            current_piece = self.current_piece
+        if piece_x is None:
+            piece_x = self.piece_x
+            flag_x=1
+        if piece_y == None:
+            piece_y = self.piece_y
+        if not self.check_collision(current_piece, piece_x + 1, piece_y,grid):
+            piece_x += 1
+        return piece_x
 
-    def rotate_piece(self):
-        rotated_piece = list(zip(*self.current_piece[::-1]))
-        if not self.check_collision(rotated_piece, self.piece_x, self.piece_y):
-            self.current_piece = rotated_piece
+    def rotate_piece(self,grid=None, current_piece=None, piece_x=None,piece_y=None):
+        flag_c=0
+        if grid is None:
+            grid = self.grid
+        if current_piece is None:
+            current_piece = self.current_piece
+            flag_c=1
+        if piece_x is None:
+            piece_x = self.piece_x
+        if piece_y == None:
+            piece_y = self.piece_y
+        rotated_piece = list(zip(*current_piece[::-1]))
+        if not self.check_collision(rotated_piece, piece_x, piece_y,grid):
+            current_piece = rotated_piece
+        return current_piece
 
-    def move_piece_left1(self,grid_copy):
-        if not self.check_collision(self.current_piece, self.piece_x - 1, self.piece_y):
-            self.piece_x -= 1
-
-    def move_piece_right1(self,grid_copy):
-        if not self.check_collision(self.current_piece, self.piece_x + 1, self.piece_y):
-            self.piece_x += 1
-
-    def rotate_piece1(self,grid_copy):
-        rotated_piece = list(zip(*self.current_piece[::-1]))
-        if not self.check_collision(rotated_piece, self.piece_x, self.piece_y):
-            self.current_piece = rotated_piece
-
-    def check_collision(self, piece, offset_x, offset_y):
+    def check_collision(self, piece, offset_x, offset_y,grid=None):
+        
+        if grid==None:
+            grid=self.grid
         for y in range(len(piece)):
             for x in range(len(piece[y])):
                 if piece[y][x] and (
                         y + offset_y < 0 or y + offset_y >= self.board.GRID_HEIGHT or
                         x + offset_x < 0 or x + offset_x >= self.board.GRID_WIDTH or
-                        self.grid[y + offset_y][x + offset_x] != 0
+                        grid[y + offset_y][x + offset_x] != 0
                 ):
                     return True
         return False
@@ -309,9 +334,23 @@ class Tetris:
                 lines_cleared += 1
         self.score += lines_cleared * 100
         self.board.linesCleared += lines_cleared 
-        self.board.high_score = max(self.board.high_score, self.board.score)  # Update high score
+        self.board.high_score = max(self.board.high_score, self.score)  # Update high score
         self.board.save_high_score()  # Save high score to file
 
+    def max_height2(self, piece, offset_x, offset_y):
+        #for x in range(len(piece[0])):
+        column_heights = [0] * self.board.GRID_WIDTH
+        
+        for y in range(len(piece)):
+            for x in range(len(piece[y])):
+                if piece[y][x]:
+                    column_heights[offset_x + x] = max(column_heights[offset_x + x], self.board.GRID_HEIGHT - (offset_y + y))
+        #self.height = max(column_heights)
+        print(column_heights)
+        return min(column_heights)
+        #if column_height >= self.height:
+          #  self.height = column_height
+            #self.height = offset_y + y
     def max_height(self, piece, offset_x, offset_y):
         #for x in range(len(piece[0])):
         column_heights = [0] * self.board.GRID_WIDTH
@@ -319,157 +358,242 @@ class Tetris:
             for x in range(len(piece[y])):
                 if piece[y][x]:
                     column_heights[offset_x + x] = max(column_heights[offset_x + x], self.board.GRID_HEIGHT - (offset_y + y))
-        self.height = max(column_heights)
-        return max(column_heights)
-        #if column_height >= self.height:
-          #  self.height = column_height
-            #self.height = offset_y + y
+        #self.height = max(column_heights)
+       
+        filled_rows=sum(1 for row in self.grid if any(row))+sum(1 for row in piece if any(piece))
+        return filled_rows
+        return min(column_heights)
         
-    def count_holes_in_range(self, max_height):
+    def count_holes_in_range(self, max_height,grid=None):
         num_holes = 0
+        if grid == None:
+            grid=self.grid
         for x in range(self.board.GRID_WIDTH):  # Iterate over each column
             hole_found = False  # Flag to indicate if a hole has been found in this column
             for y in range(self.board.GRID_HEIGHT-max_height, self.board.GRID_HEIGHT):  # Start from the top of the grid
-                if self.grid[y][x] != 0:  # If we encounter a filled cell
+                if grid[y][x] != 0:  # If we encounter a filled cell
                     hole_found = True  # Update flag to indicate that a filled cell has been found
                 elif hole_found:  # If a filled cell has been found and we encounter an empty cell
                     num_holes += 1  # Count it as a hole
         return num_holes
     
-    def calculate_height_after_move(self, move):
-        # Make a copy of the grid
-        grid_copy = copy.deepcopy(self.grid)#[row[:] for row in self.grid]
-
+    def calculate_height_after_move1(self, grid_copy, move, current_piece, piece_x, piece_y):
         if move == "LEFT":
-            self.move_piece_left(grid_copy)
+            piece_x = self.move_piece_left(grid_copy,current_piece,piece_x,piece_y)  # Move one step to the left
         elif move == "RIGHT":
-            self.move_piece_right(grid_copy)
-        elif move == "DOWN":
-            self.move_piece_down(grid_copy)
+            piece_x = self.move_piece_right(grid_copy,current_piece,piece_x,piece_y)  # Move one step to the right
         elif move == "ROTATE":
-            self.rotate_piece(grid_copy)
-
+            # Update current_piece after rotation
+            current_piece = self.rotate_piece(grid_copy, current_piece, piece_x, piece_y)
+        print(current_piece)
         # Calculate the maximum height in the grid after the move
-        new_height = self.max_height(grid_copy)
+        new_height = self.max_height(current_piece, piece_x, piece_y)
         return new_height
-    
-    def get_best_move(self, max_height):
-        possible_moves = ["LEFT", "RIGHT", "DOWN", "ROTATE"]
+
+    def get_best_move1(self, grid_copy, current_piece, piece_x, piece_y, max_height):
+        possible_moves = ["LEFT", "RIGHT","ROTATE"]
         best_move = None
         best_height = max_height  # Initialize with current max height
 
         for move in possible_moves:
-            new_height = self.calculate_height_after_move(move)
-            if new_height <= best_height:
+            if move in ["LEFT", "RIGHT"]:
+                # Calculate the height after moving the piece multiple steps
+                new_piece_x = piece_x
+                while True:
+                    new_piece_x = (self.move_piece_left(grid_copy,current_piece,new_piece_x,piece_y) if move == "LEFT" else self.move_piece_right(grid_copy,current_piece,new_piece_x,piece_y))
+                    new_height = self.calculate_height_after_move(grid_copy, move, current_piece, new_piece_x, piece_y)
+                    if new_piece_x == piece_x or new_height < best_height:
+                        # Stop when either reached the original position or found a lower height
+                        break
+                    piece_x = new_piece_x
+            else:
+                new_height = self.calculate_height_after_move(grid_copy, move, current_piece, piece_x, piece_y)
+            
+            if new_height < best_height:
                 best_height = new_height
                 best_move = move
 
+        print(best_move)
+        return best_move
+
+    def calculate_height_after_move(self,grid_copy, move,current_piece,piece_x,piece_y):
+        # Make a copy of the grid
+        #grid_copy = copy.deepcopy(self.grid)#[row[:] for row in self.grid]
+        #grid_copy=grid_copy
+        #piece_x_copy=
+        if move == "LEFT":
+            piece_x-=1
+            #piece_x=self.move_piece_left(grid_copy,current_piece,piece_x,piece_y)
+        if move == "RIGHT":
+            piece_x+=1
+            #piece_x=self.move_piece_right(grid_copy,current_piece,piece_x,piece_y)
+        if move == "ROTATE":
+            current_piece=self.rotate_piece(grid_copy,current_piece,piece_x,piece_y)
+        #move_piece_left(self, grid=None, current_piece=None, piece_x=None,piece_y=None)
+        # Calculate the maximum height in the grid after the move
+        #max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
+        new_height = self.max_height(current_piece,piece_x,piece_y)
+        return new_height
+    
+    def get_best_move(self,grid_copy,current_piece,piece_x,piece_y,max_height):
+        possible_moves = ["LEFT", "RIGHT","ROTATE"]
+        best_move = None
+        best_height = max_height  # Initialize with current max height
+
+        for move in possible_moves:
+            new_height = self.calculate_height_after_move(grid_copy,move,current_piece,piece_x,piece_y)
+            if new_height < best_height:
+                best_height = new_height
+                best_move = move
+        print(best_move)
         return best_move
     
-    def AIPlayer(self,tetris_copy):
+    def run(self,flag_new):
         global timer_seconds
-        possible_moves = ["LEFT", "RIGHT", "DOWN", "ROTATE"]
-        while not self.game_over:
-            move= random.choice(possible_moves)
-            if move=="LEFT":
-                self.move_piece_left()
-            if move=="RIGHT":
-                self.move_piece_right()
-            if move=="DOWN":
-                self.move_piece_down()
-            if move=="ROTATE":
-                self.rotate_piece()
-            if not self.paused:
-                self.move_piece_down()  # Default behavior if AI player is not initialized
-            self.clear_lines()
-            self.draw_grid()
-            fontSize = int(1.5 * BLOCK_SIZE)
-            nextYPos = int(self.drawer.height * 0.2)
-            gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
-            nextText = gameFont.render("Next piece", True, self.drawer.fontColour)
-            self.draw_piece(self.next_piece, self.board.GRID_WIDTH + 7, 6)  # Draw next piece
-            screen.blit(nextText, ((self.drawer.boardOffset + 12) *BLOCK_SIZE, (nextYPos) * BLOCK_SIZE))
-            self.draw_piece(self.current_piece, self.piece_x, self.piece_y)
-            self.drawer.drawStats(self.board, timer_seconds)
-            self.drawer.draw_score(self.score, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
-            filled_rows = sum(1 for row in self.grid if any(row))
-            self.drawer.draw_height(filled_rows, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
-            max_height_range = (0, filled_rows)
-            num_holes = self.count_holes_in_range(filled_rows)
-            self.drawer.drawHoles(num_holes, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
-            pygame.display.update()
-            self.clock.tick(5)  # Adjust game speed
-            if timer_seconds == 0:
-                self.game_over = True
-            else:
-                timer_seconds -= 1
-          
-    
-    def run(self,tetris_copy):
-        global timer_seconds
-        
         while not self.game_over:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
-                    
                     if event.key == pygame.K_LEFT:
-                        self.move_piece_left()
-                        
+                        self.piece_x=self.move_piece_left()
                         max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
                     elif event.key == pygame.K_RIGHT:
-                        self.move_piece_right()
+                        self.piece_x=self.move_piece_right()
                         max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
                     elif event.key == pygame.K_DOWN:
                         self.move_piece_down()
-                        
                         max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
                     elif event.key == pygame.K_UP:
-                        self.rotate_piece()
+                        self.current_piece=self.rotate_piece()
                     elif event.key == pygame.K_SPACE:  # Added for drop hard feature
                         self.drop_piece_hard()
                         
                     elif event.key == pygame.K_p:  # Pause/unpause when P key is pressed
                         self.paused = not self.paused
-            if not self.paused:
-                self.move_piece_down()  # Default behavior if AI player is not initialized
-            self.clear_lines()
+                        while self.paused:
+                            screen.blit(bg, (0, 0))
+                            drawer.drawPauseScreen()
+                            pygame.display.update()
+                            for event in pygame.event.get():
+                                if event.type == pygame.QUIT:
+                                    pygame.quit()
+                                    sys.exit()
+                                elif event.type == pygame.KEYDOWN:
+                                    if event.key == pygame.K_p:  # Pause/unpause when P key is pressed
+                                        self.paused = not self.paused
+                                    if event.key == pygame.K_n:
+                                        flag_new=True#for new game
+                                        return flag_new
+            if not self.paused:  # Only update the game if not paused
+                self.move_piece_down()
+                self.clear_lines()
+                self.clock.tick(1)  # Adjust game speed
+                if timer_seconds == 0:
+                    self.game_over = True
+                else:
+                    timer_seconds -= 1
             self.draw_grid()
-            
             fontSize = int(1.5 * BLOCK_SIZE)
             nextYPos = int(self.drawer.height * 0.2)
             gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
-            nextText = gameFont.render("Next piece", True, self.drawer.fontColour)
-            self.draw_piece(self.next_piece, self.board.GRID_WIDTH + 7, 6)  # Draw next piece
-            screen.blit(nextText, ((self.drawer.boardOffset + 12) *BLOCK_SIZE, (nextYPos) * BLOCK_SIZE))
-            self.draw_piece(self.current_piece, self.piece_x, self.piece_y)
+            nextText = gameFont.render("Next piece", True, self.drawer.fontColour1)
+            self.draw_piece(self.next_piece, self.board.GRID_WIDTH +5, 3)  # Draw next piece
+            screen.blit(nextText, ((self.drawer.boardOffset + 12) *BLOCK_SIZE, (nextYPos-1) * BLOCK_SIZE))
+            self.draw_piece(self.current_piece, self.piece_x, self.piece_y)# Draw current piece
             self.drawer.drawStats(self.board, timer_seconds)
             self.drawer.draw_score(self.score, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
             filled_rows = sum(1 for row in self.grid if any(row))
-            self.drawer.draw_height(filled_rows, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
-            max_height_range = (0, filled_rows)
-            num_holes = self.count_holes_in_range(filled_rows)
-            self.drawer.drawHoles(num_holes, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
-            print(tetris_copy.value)
+            #self.drawer.draw_height(filled_rows, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
+            #max_height_range = (0, filled_rows)
+            #num_holes = self.count_holes_in_range(filled_rows)
+            #self.drawer.drawHoles(num_holes, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
             pygame.display.update()
-            self.clock.tick(5)  # Adjust game speed
-            if timer_seconds == 0:
-                self.game_over = True
-            else:
-                timer_seconds -= 1
 
-
-
+    def runAI(self,flag_new):
+            
+            global timer_seconds
+            while not self.game_over:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    elif event.type == pygame.KEYDOWN:                        
+                        if event.key == pygame.K_p:  # Pause/unpause when P key is pressed
+                            self.paused = not self.paused
+                            while self.paused:
+                                screen.blit(bg, (0, 0))
+                                drawer.drawPauseScreen()
+                                pygame.display.update()
+                                for event in pygame.event.get():
+                                    if event.type == pygame.QUIT:
+                                        pygame.quit()
+                                        sys.exit()
+                                    elif event.type == pygame.KEYDOWN:
+                                        if event.key == pygame.K_p:  # Pause/unpause when P key is pressed
+                                            self.paused = not self.paused
+                                        if event.key == pygame.K_n:
+                                            flag_new=True#for new game
+                                            return flag_new
+                                    
+                if not self.paused:  # Only update the game if not paused
+                    
+                    self.move_piece_down()
+                    self.clear_lines()
+                    self.clock.tick(1)  # Adjust game speed
+                    if timer_seconds == 0:
+                        self.game_over = True
+                    else:
+                        timer_seconds -= 1
+                
+                self.draw_grid()
+                
+                fontSize = int(1.5 * BLOCK_SIZE)
+                nextYPos = int(self.drawer.height * 0.2)
+                gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
+                nextText = gameFont.render("Next piece", True, self.drawer.fontColour1)
+                self.draw_piece(self.next_piece, self.board.GRID_WIDTH +4, 1)  # Draw next piece
+                screen.blit(nextText, ((self.drawer.boardOffset + 12) *BLOCK_SIZE, (nextYPos-3) * BLOCK_SIZE))
+                
+                self.draw_piece(self.current_piece, self.piece_x, self.piece_y)# Draw current piece
+                self.drawer.drawStats(self.board, timer_seconds)
+                self.drawer.draw_score(self.score, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
+                filled_rows = sum(1 for row in self.grid if any(row))
+                self.drawer.draw_height(filled_rows, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
+                max_height_range = (0, filled_rows)
+                num_holes = self.count_holes_in_range(filled_rows)
+                self.drawer.drawHoles(num_holes, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
+                pygame.display.update()
+                
+                grid_copy=copy.deepcopy(self.grid)
+                current_piece_copy=copy.deepcopy(self.current_piece)
+                piece_x_copy=copy.deepcopy(self.piece_x)
+                
+                piece_y_copy=copy.deepcopy(self.piece_y)
+                print(piece_x_copy)
+                max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
+                move= self.get_best_move(grid_copy,current_piece_copy,piece_x_copy,piece_y_copy,max_height)            
+                if move=="LEFT":
+                    self.piece_x=self.move_piece_left()
+                if move=="RIGHT":
+                    self.piece_x=self.move_piece_right()
+                if move=="ROTATE":
+                    self.current_piece=self.rotate_piece()
+##                
+##                grid_copy=copy.copy(self.grid)
+##                current_piece_copy=copy.copy(self.current_piece)
+##                piece_x_copy=copy.copy(self.piece_x)
+                #print(piece)
+                #print(self.current_piece,self.grid)
+            
 if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Tetris_group3")
     bg = pygame.image.load('bg.jpg').convert()
+
     game = Tetris()
-    tetris_copy=copy.copy(game)
-    print(tetris_copy.score)
     drawer = Draw()
     current_screen = "main"
     while True:
@@ -481,16 +605,20 @@ if __name__ == "__main__":
                 if current_screen == "main":
                     if event.key == pygame.K_h:
                         current_screen = "tetris"
-                        game.run(tetris_copy)
+                        flag_new=False#human
+                        flag_new=game.run(flag_new)
+                        if flag_new==True:
+                            game = Tetris()  # Reset the game
+                            current_screen = "main"
                     elif event.key == pygame.K_a:
                         current_screen = "tetris"
-                        game.AIPlayer(tetris_copy)
-                    elif event.key == pygame.K_p:  # Pause/unpause when P key is pressed
-                        game.paused = not game.paused
+                        flag_new=False
+                        flag_new=game.runAI(flag_new)
+                        if flag_new==True:
+                            game = Tetris()  # Reset the game
+                            current_screen = "main"
                 elif current_screen == "tetris":
-                    if event.key == pygame.K_p:  # Pause/unpause when P key is pressed
-                        game.paused = not game.paused
-                    elif game.game_over and event.key == pygame.K_n:  # Restart the game if 'N' is pressed
+                    if game.game_over and event.key == pygame.K_n:  # Restart the game if 'N' is pressed
                         print("Restarting the game...")
                         game = Tetris()  # Reset the game
                         current_screen = "main"
@@ -499,34 +627,37 @@ if __name__ == "__main__":
                         print("Restarting the game...")
                         game = Tetris()  # Reset the game
                         current_screen = "main"
+
+
+
+
         if current_screen == "main":
-            screen.blit(bg, (0, 0))  # Blit the background image onto the screen
-            drawer.draw_main_screen()
+                screen.blit(bg, (0, 0))  # Blit the background image onto the screen
+                drawer.draw_main_screen()
+                pygame.display.update()
+                timer_seconds = time
+        if current_screen == "paused":
+            screen.blit(bg, (0, 0))
+            drawer.drawPauseScreen()
             pygame.display.update()
         elif current_screen == "tetris":
-            if game.paused:  # If paused, only draw the pause screen
-                screen.blit(bg, (0, 0))
-                drawer.drawPauseScreen()
-            elif game.game_over:  # If the game is over, switch to the game over screen
+            if game.game_over:  # If the game is over, switch to the game over screen
                 current_screen = "game_over_screen"
             else:
                 screen.blit(bg, (0, 0))  # Blit the background image onto the screen
-                drawer.drawBoard(game.board)
-                game.draw_grid()
+                #drawer.drawBoard(game.board)
+                #game.draw_grid()
                 game.draw_piece(game.current_piece, game.piece_x, game.piece_y)
                 drawer.drawStats(game.board, timer_seconds)
                 pygame.display.update()
-        elif current_screen == "game_over_screen":
+        if current_screen == "game_over_screen":
                 screen.blit(bg, (0, 0))
                 drawer.drawGameOver()
-                drawer.draw_text_with_highlight("Score: " + str(game.score), BLOCK_SIZE * (game.board.GRID_WIDTH // 2 - 1),
-                                (game.board.GRID_HEIGHT // 2 + 2) * BLOCK_SIZE)
-                drawer.draw_text_with_highlight("High Score: {}".format(game.board.high_score), BLOCK_SIZE * (game.board.GRID_WIDTH // 2 - 1),
-                                                (game.board.GRID_HEIGHT // 2 + 4) * BLOCK_SIZE)  # Adjusted position for high score
-                drawer.draw_text_with_highlight("PRESS N to play again", BLOCK_SIZE * (game.board.GRID_WIDTH // 2 - 2),
-                                                (game.board.GRID_HEIGHT // 2 + 6) * BLOCK_SIZE)  # Adjusted position for play again
+                drawer.draw_text_with_highlight("Score: " + str(game.score), BLOCK_SIZE * (game.board.GRID_WIDTH // 2+4),
+                                (game.board.GRID_HEIGHT // 2 +2 ) * BLOCK_SIZE)
+                drawer.draw_text_with_highlight("High Score: {}".format(game.board.high_score), BLOCK_SIZE * (game.board.GRID_WIDTH // 2 +2),
+                                                (game.board.GRID_HEIGHT // 2 + 5) * BLOCK_SIZE)  # Adjusted position for high score
+                drawer.draw_text_with_highlight("PRESS N to play again", BLOCK_SIZE * (game.board.GRID_WIDTH // 2 -1),
+                                                (game.board.GRID_HEIGHT // 2 + 8) * BLOCK_SIZE)  # Adjusted position for play again
                 pygame.display.update()
                 timer_seconds = time
-
-    
-    
