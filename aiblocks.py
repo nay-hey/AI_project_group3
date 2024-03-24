@@ -80,13 +80,20 @@ class Draw:
         
     def draw_main_screen(self):
         self.draw_text_with_highlight("WELCOME TO TETRIS!", (self.boardWidth // 2 - 1.5) * BLOCK_SIZE,
-                                      ((self.board.GRID_HEIGHT / 2) - 5) * BLOCK_SIZE,
-                                      highlight_color=(20, 0, 200))
+                              ((self.board.GRID_HEIGHT / 2) - 5) * BLOCK_SIZE,
+                              highlight_color=(20, 0, 200))
+
         self.draw_text_with_highlight("PRESS  A  :  AI MODE", (self.boardWidth // 2 - 1) * BLOCK_SIZE,
-                                      (self.board.GRID_HEIGHT / 2) * BLOCK_SIZE, highlight_color=(20, 200, 20))
-        self.draw_text_with_highlight("PRESS  H  :  HUMAN", (self.boardWidth // 2 - 0.7) * BLOCK_SIZE,
-                                      ((self.board.GRID_HEIGHT / 2) + self.boardOffset + 1) * BLOCK_SIZE,
-                                      highlight_color=(100, 190, 200))
+                                    (self.board.GRID_HEIGHT / 2) * BLOCK_SIZE, highlight_color=(20, 200, 20))
+
+        self.draw_text_with_highlight("PRESS  R  : RANDOM BLOCK", (self.boardWidth // 2 - 2.1) * BLOCK_SIZE,
+                                    ((self.board.GRID_HEIGHT / 2) + self.boardOffset + 1) * BLOCK_SIZE,
+                                    highlight_color=(100, 190, 200))
+
+        self.draw_text_with_highlight("PRESS  I  :  AI GENERATED BLOCK", (self.boardWidth // 2 - 1) * BLOCK_SIZE,
+                                    ((self.board.GRID_HEIGHT / 2) + 2 * self.boardOffset + 1) * BLOCK_SIZE,
+                                    highlight_color=(200, 200, 200))
+
 
 
     def drawGameOver(self):
@@ -546,8 +553,7 @@ class Tetris:
                 best_move = move
         print(best_move)
         return best_move
-    
-    def run(self,flag_new):
+    def runAIBlock(self,flag_new):
         global timer_seconds
         while not self.game_over:
             for event in pygame.event.get():
@@ -610,6 +616,68 @@ class Tetris:
             #num_holes = self.count_holes_in_range(filled_rows)
             #self.drawer.drawHoles(num_holes, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
             pygame.display.update()
+    def run(self,flag_new):
+        global timer_seconds
+        while not self.game_over:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        self.piece_x=self.move_piece_left()
+                        max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
+                    elif event.key == pygame.K_RIGHT:
+                        self.piece_x=self.move_piece_right()
+                        max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
+                    elif event.key == pygame.K_DOWN:
+                        self.move_piece_down()
+                        max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
+                    elif event.key == pygame.K_UP:
+                        self.current_piece=self.rotate_piece()
+                    elif event.key == pygame.K_SPACE:  # Added for drop hard feature
+                        self.drop_piece_hard()
+                        
+                    elif event.key == pygame.K_p:  # Pause/unpause when P key is pressed
+                        self.paused = not self.paused
+                        while self.paused:
+                            screen.blit(bg, (0, 0))
+                            drawer.drawPauseScreen()
+                            pygame.display.update()
+                            for event in pygame.event.get():
+                                if event.type == pygame.QUIT:
+                                    pygame.quit()
+                                    sys.exit()
+                                elif event.type == pygame.KEYDOWN:
+                                    if event.key == pygame.K_p:  # Pause/unpause when P key is pressed
+                                        self.paused = not self.paused
+                                    if event.key == pygame.K_n:
+                                        flag_new=True#for new game
+                                        return flag_new
+            if not self.paused:  # Only update the game if not paused
+                self.move_piece_down()
+                self.clear_lines()
+                self.clock.tick(5)  # Adjust game speed
+                if timer_seconds == 0:
+                    self.game_over = True
+                else:
+                    timer_seconds -= 1
+            self.draw_grid()
+            fontSize = int(1.5 * BLOCK_SIZE)
+            nextYPos = int(self.drawer.height * 0.2)
+            gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
+            nextText = gameFont.render("Next piece", True, self.drawer.fontColour1)
+            self.draw_piece(self.next_piece, self.board.GRID_WIDTH +5, 3)  # Draw next piece
+            screen.blit(nextText, ((self.drawer.boardOffset + 12) *BLOCK_SIZE, (nextYPos-1) * BLOCK_SIZE))
+            self.draw_piece(self.current_piece, self.piece_x, self.piece_y)# Draw current piece
+            self.drawer.drawStats(self.board, timer_seconds)
+            self.drawer.draw_score(self.score, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
+            filled_rows = sum(1 for row in self.grid if any(row))
+            #self.drawer.draw_height(filled_rows, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
+            #max_height_range = (0, filled_rows)
+            #num_holes = self.count_holes_in_range(filled_rows)
+            #self.drawer.drawHoles(num_holes, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
+            pygame.display.update()
 
     def runAI(self,flag_new):
             
@@ -641,7 +709,7 @@ class Tetris:
                     
                     self.move_piece_down()
                     self.clear_lines()
-                    self.clock.tick(1)  # Adjust game speed
+                    self.clock.tick(10)  # Adjust game speed
                     if timer_seconds == 0:
                         self.game_over = True
                     else:
@@ -703,7 +771,7 @@ if __name__ == "__main__":
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if current_screen == "main":
-                    if event.key == pygame.K_h:
+                    if event.key == pygame.K_r:
                         current_screen = "tetris"
                         flag_new=False#human
                         flag_new=game.run(flag_new)
@@ -714,6 +782,13 @@ if __name__ == "__main__":
                         current_screen = "tetris"
                         flag_new=False
                         flag_new=game.runAI(flag_new)
+                        if flag_new==True:
+                            game = Tetris()  # Reset the game
+                            current_screen = "main"
+                    elif event.key == pygame.K_i:
+                        current_screen = "tetris"
+                        flag_new=False
+                        flag_new=game.runAIBlock(flag_new)
                         if flag_new==True:
                             game = Tetris()  # Reset the game
                             current_screen = "main"
