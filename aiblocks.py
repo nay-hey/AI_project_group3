@@ -586,7 +586,7 @@ class Tetris:
                                         flag_new=True#for new game
                                         return flag_new
             if not self.paused:  # Only update the game if not paused
-                #self.poll_attacker_ai()
+                self.poll_attacker_ai()
                 self.move_piece_down()
                 self.clear_lines()
                 self.clock.tick(5)  # Adjust game speed
