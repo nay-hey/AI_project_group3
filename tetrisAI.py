@@ -95,7 +95,6 @@ class Draw:
                                     highlight_color=(200, 200, 200))
 
 
-
     def drawGameOver(self):
         self.draw_text_with_highlight("GAME OVER", BLOCK_SIZE * (self.boardWidth // 2 + 2),
                                       (self.board.GRID_HEIGHT // 2 - 2) * BLOCK_SIZE)  # Update here
