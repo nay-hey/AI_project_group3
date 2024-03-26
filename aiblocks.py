@@ -211,8 +211,6 @@ class Tetris:
         self.paused = False
         self.piece_x = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2#offset for drawing the piece
         self.piece_y = 0
-        #self.piece_x_copy = self.board.GRID_WIDTH // 2 - len(self.current_piece[0]) // 2#offset for drawing the piece
-        #self.piece_y_copy = 0
     def poll_attacker_ai(self, piece_x_copy, piece_y_copy):
         # AI attacker logic
         # Calculate the impact of each possible next piece on the player's score
@@ -255,8 +253,6 @@ class Tetris:
             temp_piece = Tetromino.SHAPES[type_]
             # Find the best position to place the piece on the board
             best_position = self.find_best_position_rotation(temp_board, temp_piece)
-            #self.piece_x_copy = self.board.GRID_WIDTH // 2 - len(temp_piece[0]) // 2#offset for drawing the piece
-            #self.piece_y_copy = 0
             # Draw the piece on the temporary board
             self.drop_piece_hard1(temp_piece,piece_x_copy, piece_y_copy, temp_board)
             max_height=sum(1  for row in temp_board if any(row))
@@ -267,7 +263,7 @@ class Tetris:
             holes_difference = num_holes_after - num_holes_before
             # Assign a score based on the increase in holes
             scores[type_] = holes_difference
-        print(scores)
+        #print(scores)
         return scores
     def draw_piece_on_board(self, piece, temp_board, offset_x, offset_y):
         for y in range(len(piece)):
