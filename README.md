@@ -11,10 +11,55 @@ AI Gameplay
 The included simple AI is programmed to move the tetromino to the left until it encounters an obstacle, then it rotates the tetromino. If there's still an obstruction, it moves the tetromino to the right. This process repeats during the AI's gameplay.
 
 Tetris Class Functions:
-init: Initializes the Tetris game, creating instances of the Board, Draw, and Clock objects. It also initializes the game grid, sets the current and next pieces, and sets initial game state variables.
+Here's a breakdown of the functionality of the provided `Tetris` class and its methods:
 
-poll_attacker_ai: This function is responsible for AI attacker logic. It evaluates potential moves by considering available piece types and their impact on the player's score. It then selects the piece that decreases the player's score the most, simulating the next move.
+1. **__init__**: Initializes the game by instantiating objects for the game board, drawing, and clock. It also sets up variables for the game state such as the current and next pieces, score, and game over flag.
 
+2. **poll_attacker_ai**: Implements the AI logic for the attacker. It evaluates potential moves by considering available piece types and their impact on the player's score. Then it selects the piece that decreases the player's score the most.
+
+3. **get_available_types**: Returns a dictionary of available types of tetrominoes that can be used in the game.
+
+4. **find_best_position_rotation**: Finds the best position and rotation for the current tetromino, considering the current state of the game board.
+
+5. **score_types**: Scores each possible move or configuration of a tetromino based on certain criteria, such as the number of holes created.
+
+6. **draw_piece_on_board**: Draws a tetromino piece on the game board.
+
+7. **new_piece**: Generates a new random tetromino piece.
+
+8. **draw_grid**: Draws the game grid on the screen.
+
+9. **draw_piece**: Draws a tetromino piece on the screen.
+
+10. **drop_piece_hard**: Drops the current piece down to the lowest possible position and merges it with the existing grid.
+
+11. **move_piece_down**: Moves the current piece down by one position.
+
+12. **move_piece_left**: Moves the current piece left by one position.
+
+13. **move_piece_right**: Moves the current piece right by one position.
+
+14. **rotate_piece**: Rotates the current piece clockwise.
+
+15. **is_valid_position**: Checks if a piece can be placed at a given position on the grid.
+
+16. **check_collision**: Checks for collisions between a piece and the grid or other pieces.
+
+17. **merge_piece**: Merges a piece with the existing grid when it cannot move further down.
+
+18. **get_column_height**: Calculates the height of a specific column in the grid.
+
+19. **clear_lines**: Clears completed lines from the grid and updates the score.
+
+20. **max_height**: Calculates the maximum height reached by the current piece.
+
+21. **count_holes_in_range**: Counts the number of holes in the grid within a specific height range.
+
+22. **calculate_score**: Calculates a score based on factors such as holes and maximum height.
+
+23. **get_best_move**: Determines the best move for the AI player based on the current game state.
+
+24. **runAIBlock**: Runs the AI-controlled gameplay loop, handling user inputs and AI actions.
 
 
 Board Class Functions:
