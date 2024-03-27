@@ -490,13 +490,28 @@ class Tetris:
                     num_holes += 1  # Count it as a hole
         return num_holes
     
+    def get_clear_lines(self,grid_copy):
+        clear_lines = 0
+        for row in grid_copy:
+            if all(row):  # If all cells in the row are occupied
+                clear_lines += 1
+        return clear_lines
+    
+    def calculate_score(self, holes, max_height):
+        # Define weights for different factors based on your strategy
+        holes_weight = 2
+        height_weight = 10
+
+        # Calculate the score based on the weighted sum of factors
+        score = holes_weight * holes + height_weight * max_height
+
+        return score
+        
     def get_best_move(self, grid_copy, current_piece, piece_x, piece_y, max_height):
         possible_moves = ["LEFT", "RIGHT", "ROTATE"]
         best_move = None
-        best_holes = float('inf')  # Initialize with infinity to ensure any found holes are better
+        best_score = float('inf')  # Initialize with negative infinity to ensure any found score is better
         original_grid = copy.deepcopy(grid_copy)
-        min_max_height = float('inf')
-        column_height = self.get_column_height(grid_copy, piece_y)
         
         for move in possible_moves:
             if move == "ROTATE":
@@ -516,15 +531,12 @@ class Tetris:
                         # Calculate the number of holes in the grid
                         new_holes = self.count_holes_in_range(max_height, grid=grid_copy)
                         
-                        # Check if lines are cleared
-                        lines_cleared = self.board.linesCleared - a
-                        if lines_cleared > 0:
-                            return move  # Prioritize clearing lines
+                        # Calculate the score based on your strategy
+                        score = self.calculate_score(new_holes, max_height)
                         
-                        # Update best move based on holes and height
-                        if new_holes < best_holes or (new_holes == best_holes and column_height < min_max_height):
-                            best_holes = new_holes
-                            min_max_height = column_height
+                        # Update best move based on the score
+                        if score < best_score:
+                            best_score = score
                             best_move = move
                         
                         # Restore the grid to its original state
@@ -536,8 +548,7 @@ class Tetris:
             elif move in ["LEFT", "RIGHT"]:
                 # Calculate the height after moving the piece multiple steps
                 new_piece_x = piece_x
-                a = self.clear_lines(grid_copy) 
-                #print(a) # Store initial lines cleared count
+                
                 while True:
                     # Move the piece
                     new_piece_x = (self.move_piece_left(grid_copy, current_piece, new_piece_x, piece_y)
@@ -549,34 +560,32 @@ class Tetris:
 
                     # Drop the piece
                     self.drop_piece_hard1(current_piece, new_piece_x, piece_y, grid_copy)
-                    lines_cleared = self.clear_lines(grid_copy) - a
-                    if lines_cleared > 0:
-                        return move  # Prioritize clearing lines
-
+                    
+                    # Calculate the height after dropping the piece
                     max_height = sum(1 for row in grid_copy if any(row))
+                    
+                    # Calculate the number of holes in the grid
                     new_holes = self.count_holes_in_range(max_height, grid=grid_copy)
-                    if new_holes==best_holes:
-                        if column_height < min_max_height:
-                            best_holes = new_holes
-                            min_max_height = column_height
-                            best_move = move
-
-                    # Update best move based on holes and height
-                    if new_holes < best_holes: 
-                        best_holes = new_holes
+                    
+                    # Calculate the score based on your strategy
+                    score = self.calculate_score(new_holes, max_height)
+                    
+                    # Update best move based on the score
+                    if score < best_score:
+                        best_score = score
                         best_move = move
 
                     # Restore the grid to its original state
                     grid_copy = copy.deepcopy(original_grid)
 
-                    # Stop when reached grid boundary or found a lower height
+                    # Stop when reached grid boundary
                     if new_piece_x == piece_x:
                         break
-
-                    # Update the current piece position
                     piece_x = new_piece_x
 
         return best_move
+
+
 
 
     def runAIBlock(self,flag_new):
