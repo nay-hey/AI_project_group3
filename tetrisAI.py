@@ -95,6 +95,7 @@ class Draw:
                                     highlight_color=(200, 200, 200))
 
 
+
     def drawGameOver(self):
         self.draw_text_with_highlight("GAME OVER", BLOCK_SIZE * (self.boardWidth // 2 + 2),
                                       (self.board.GRID_HEIGHT // 2 - 2) * BLOCK_SIZE)  # Update here
@@ -386,6 +387,19 @@ class Tetris:
             current_piece = rotated_piece
         return current_piece
 
+    def is_valid_position(self, piece, x, y, grid):
+        """
+        Check if the piece can be placed at the given position on the grid.
+        """
+        piece_height = len(piece)
+        piece_width = len(piece[0])
+        for i in range(piece_height):
+            for j in range(piece_width):
+                if piece[i][j] and (x + j < 0 or x + j >= len(grid[0]) or y + i >= len(grid) or grid[y + i][x + j]):
+                    return False
+        return True
+
+
     def check_collision(self, piece, offset_x, offset_y,grid=None):
         if grid==None:
             grid=self.grid
@@ -422,7 +436,19 @@ class Tetris:
                     if 0 <= grid_y < len(grid) and 0 <= grid_x < len(grid[0]):
                         grid[grid_y][grid_x] = current_piece[y][x]
 
-    def clear_lines(self):
+    def get_column_height(self, grid, column_index):
+        """
+        Calculate the height of a specific column in the grid.
+        """
+        height = len(grid)  # Start from the top row
+        if column_index < 0 or column_index >= len(grid[0]):  # Check if column_index is out of range
+            return 0
+        for row in range(len(grid)):
+            if grid[row][column_index]:
+                return height - row
+        return 0
+
+    def clear_lines(self,grid=None):
         lines_cleared = 0
         for y in range(self.board.GRID_HEIGHT):
             if all(self.grid[y]):
@@ -433,6 +459,7 @@ class Tetris:
         self.board.linesCleared += lines_cleared 
         self.board.high_score = max(self.board.high_score, self.score)  # Update high score
         self.board.save_high_score()  # Save high score to file
+        return lines_cleared
 
           
     def max_height(self, piece, offset_x, offset_y):
@@ -468,90 +495,87 @@ class Tetris:
         best_move = None
         best_holes = float('inf')  # Initialize with infinity to ensure any found holes are better
         original_grid = copy.deepcopy(grid_copy)
-
+        min_max_height = float('inf')
+        column_height = self.get_column_height(grid_copy, piece_y)
+        
         for move in possible_moves:
-            '''if move == "ROTATE":
-                rotated_piece = self.rotate_piece(current_piece)
-                rotated_piece_width = len(rotated_piece[0])
-                # Attempt to rotate the piece and evaluate resulting holes
-                for i in range(-1, 2):  # Try rotating in both directions
-                    rotated_piece_copy = copy.deepcopy(rotated_piece)
-                    rotated_piece_copy = self.rotate_piece(rotated_piece_copy, i)
-                    new_piece_x = piece_x
-                    new_piece_y = piece_y
+            if move == "ROTATE":
+                # Iterate over possible rotations
+                for rotation in range(4):  # Assuming 4 possible rotations
+                    rotated_piece = self.rotate_piece(grid_copy, current_piece, piece_x, piece_y)
+                    rotated_piece_copy = rotated_piece.copy()
                     
-                    # Attempt to place the rotated piece on the grid and evaluate holes
-                    while True:
-                        new_piece_x = (self.move_piece_left(grid_copy, rotated_piece_copy, new_piece_x, new_piece_y) if move == "LEFT" else self.move_piece_right(grid_copy, rotated_piece_copy, new_piece_x, new_piece_y))
-
-                        # Check if the new position is within the grid boundaries
-                        if new_piece_x < 0 or new_piece_x + rotated_piece_width > len(grid_copy[0]):
-                            break
-
-                        # drop piece
-                        self.drop_piece_hard1(rotated_piece_copy, new_piece_x, new_piece_y, grid_copy)
-
+                    # Check if the rotation is valid
+                    if self.is_valid_position(rotated_piece_copy, piece_x, piece_y, grid_copy):
+                        # Drop the rotated piece
+                        self.drop_piece_hard1(rotated_piece_copy, piece_x, piece_y, grid_copy)
+                        
                         # Calculate the height after dropping the piece
                         max_height = sum(1 for row in grid_copy if any(row))
-
+                        
                         # Calculate the number of holes in the grid
                         new_holes = self.count_holes_in_range(max_height, grid=grid_copy)
-
-                        # If the new number of holes is less than the current best, update best_holes and best_move
-                        if new_holes < best_holes:
+                        
+                        # Check if lines are cleared
+                        lines_cleared = self.board.linesCleared - a
+                        if lines_cleared > 0:
+                            return move  # Prioritize clearing lines
+                        
+                        # Update best move based on holes and height
+                        if new_holes < best_holes or (new_holes == best_holes and column_height < min_max_height):
                             best_holes = new_holes
+                            min_max_height = column_height
                             best_move = move
-                            print(best_holes)
-                            print(best_move, "--")
+                        
                         # Restore the grid to its original state
                         grid_copy = copy.deepcopy(original_grid)
-
-                        # Stop when either reached the grid boundary or found a lower height
-                        if new_piece_x == piece_x:
-                            break
-
-                        # Update the current piece position
-                        piece_x = new_piece_x
-                        break
-'''
-            if move in ["LEFT", "RIGHT"]:
+                    
+                    # Rotate the piece for the next iteration
+                    current_piece = rotated_piece
+                    
+            elif move in ["LEFT", "RIGHT"]:
                 # Calculate the height after moving the piece multiple steps
                 new_piece_x = piece_x
-                # Adjust the conditions for lateral movement to reach the grid boundary
+                a = self.clear_lines(grid_copy) 
+                #print(a) # Store initial lines cleared count
                 while True:
-                    new_piece_x = (self.move_piece_left(grid_copy, current_piece, new_piece_x, piece_y) if move == "LEFT" else self.move_piece_right(grid_copy, current_piece, new_piece_x, piece_y))
+                    # Move the piece
+                    new_piece_x = (self.move_piece_left(grid_copy, current_piece, new_piece_x, piece_y)
+                                if move == "LEFT" else self.move_piece_right(grid_copy, current_piece, new_piece_x, piece_y))
 
                     # Check if the new position is within the grid boundaries
                     if new_piece_x < 0 or new_piece_x >= len(grid_copy[0]):
                         break
 
-                    # drop piece
+                    # Drop the piece
                     self.drop_piece_hard1(current_piece, new_piece_x, piece_y, grid_copy)
+                    lines_cleared = self.clear_lines(grid_copy) - a
+                    if lines_cleared > 0:
+                        return move  # Prioritize clearing lines
 
-                    # Calculate the height after dropping the piece
                     max_height = sum(1 for row in grid_copy if any(row))
-
-                    # Calculate the number of holes in the grid
                     new_holes = self.count_holes_in_range(max_height, grid=grid_copy)
+                    if new_holes==best_holes:
+                        if column_height < min_max_height:
+                            best_holes = new_holes
+                            min_max_height = column_height
+                            best_move = move
 
-                    # If the new number of holes is less than the current best, update best_holes and best_move
-                    if new_holes < best_holes:
+                    # Update best move based on holes and height
+                    if new_holes < best_holes: 
                         best_holes = new_holes
-                        print(best_holes)
                         best_move = move
-                        print(best_holes)
-                        print(best_move, "--")
+
                     # Restore the grid to its original state
                     grid_copy = copy.deepcopy(original_grid)
 
-                    # Stop when either reached the grid boundary or found a lower height
+                    # Stop when reached grid boundary or found a lower height
                     if new_piece_x == piece_x:
                         break
 
                     # Update the current piece position
                     piece_x = new_piece_x
 
-        print(best_move)
         return best_move
 
 
