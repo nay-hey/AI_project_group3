@@ -153,19 +153,19 @@ class Draw:
 
         self.draw_text_with_highlight("Game Menu!", (self.boardWidth // 2 + self.boardOffset - 1) * BLOCK_SIZE,
                                     3 * BLOCK_SIZE, highlight_color=(80, 190, 200))
-        self.draw_text_with_highlight("N:                        New Game", (self.boardWidth // 2) * BLOCK_SIZE,
+        self.draw_text_with_highlight("N:                New Game", (self.boardWidth // 2) * BLOCK_SIZE,
                                     7 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
-        self.draw_text_with_highlight("P:                        Pause/Unpause", (self.boardWidth // 2) * BLOCK_SIZE,
+        self.draw_text_with_highlight("P:                Pause/Unpause", (self.boardWidth // 2) * BLOCK_SIZE,
                                     9 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
-        self.draw_text_with_highlight("Left Arrow:         Move Left", (self.boardWidth // 2) * BLOCK_SIZE,
+        self.draw_text_with_highlight("Left Arrow:        Move Left", (self.boardWidth // 2) * BLOCK_SIZE,
                                     11 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
         self.draw_text_with_highlight("Right Arrow:      Move Right", (self.boardWidth // 2) * BLOCK_SIZE,
                                     13 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
-        self.draw_text_with_highlight("Up Arrow:          Rotate", (self.boardWidth // 2) * BLOCK_SIZE,
+        self.draw_text_with_highlight("Up Arrow:         Rotate", (self.boardWidth // 2) * BLOCK_SIZE,
                                     15 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
-        self.draw_text_with_highlight("Down Arrow:          Move down", (self.boardWidth // 2) * BLOCK_SIZE,
+        self.draw_text_with_highlight("Down Arrow:       Move down", (self.boardWidth // 2) * BLOCK_SIZE,
                                     17 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
-        self.draw_text_with_highlight("Space:               Hard Drop", (self.boardWidth // 2) * BLOCK_SIZE,
+        self.draw_text_with_highlight("Space:            Hard Drop", (self.boardWidth // 2) * BLOCK_SIZE,
                                     19 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
 
 
@@ -576,33 +576,55 @@ class Tetris:
                 clear_lines += 1
         return clear_lines
     
-    def calculate_score(self, holes, max_height, lines_cleared):
+    def calculate_score(self, holes, max_height, lines_cleared,wells=None):
         # Define weights for different factors based on your strategy
-        holes_weight = 2
-        height_weight = 10
-        lines_weight=1000
+        holes_weight = 500
+        height_weight = 1000
+        lines_weight = 100
+        #wells_weight=150
+        
         # Calculate the score based on the weighted sum of factors
-        score = holes_weight * holes + height_weight * max_height - lines_weight*lines_cleared
+        score = holes_weight * holes + height_weight * max_height -lines_weight*lines_cleared
 
         return score
+    def get_wells(self,grid_copy):
+        grid_transpose = list(zip(*grid_copy[::-1]))
+        well=[]
+        for col in grid_transpose:
+            ht_col=0
+            for block in col:
+                if block!=0:
+                    ht_col+=1
+            well.append(ht_col)
+        w=abs(well[0]-well[1]) + abs(well[1]-well[2]) + abs(well[2]-well[3])+abs(well[3]-well[4])+abs(well[4]-well[5])+abs(well[5]-well[6])+abs(well[6]-well[7])+abs(well[7]-well[8])+abs(well[8]-well[9])
+
+        return w
         
+    
     def get_best_move(self, grid_copy, current_piece, piece_x, piece_y, max_height):
         possible_moves = ["LEFT", "RIGHT", "ROTATE"]
         best_move = None
         best_score = float('inf')  # Initialize with positive infinity to ensure any found score is better
         original_grid = copy.deepcopy(grid_copy)
         
+        # Iterate over all possible combinations of moves
         for move in possible_moves:
+            # For each move, create a copy of the grid and piece position
+            grid_copy = copy.deepcopy(original_grid)
+            piece_x_copy = piece_x
+            piece_y_copy = piece_y
+            current_piece_copy = current_piece
+            
             if move == "ROTATE":
-                # Iterate over possible rotations
                 for rotation in range(4):  # Assuming 4 possible rotations
-                    rotated_piece = self.rotate_piece(grid_copy, current_piece, piece_x, piece_y)
+                    # Rotate the piece
+                    rotated_piece = self.rotate_piece(grid_copy, current_piece_copy, piece_x_copy, piece_y_copy)
                     rotated_piece_copy = rotated_piece.copy()
                     
                     # Check if the rotation is valid
-                    if self.is_valid_position(rotated_piece_copy, piece_x, piece_y, grid_copy):
+                    if self.is_valid_position(rotated_piece_copy, piece_x_copy, piece_y_copy, grid_copy):
                         # Drop the rotated piece
-                        self.drop_piece_hard1(rotated_piece_copy, piece_x, piece_y, grid_copy)
+                        self.drop_piece_hard1(rotated_piece_copy, piece_x_copy, piece_y_copy, grid_copy)
                         
                         # Calculate the height after dropping the piece
                         max_height = sum(1 for row in grid_copy if any(row))
@@ -611,6 +633,7 @@ class Tetris:
                         new_holes = self.count_holes_in_range(max_height, grid=grid_copy)
                         lines_cleared = self.get_clear_lines(grid_copy)
                         
+                        #wells=self.get_wells(grid_copy)
                         # Calculate the score based on your strategy
                         score = self.calculate_score(new_holes, max_height, lines_cleared)
                         
@@ -618,29 +641,19 @@ class Tetris:
                         if score < best_score:
                             best_score = score
                             best_move = move
-                        
-                        # Restore the grid to its original state
-                        grid_copy = copy.deepcopy(original_grid)
-                    
+                            
                     # Rotate the piece for the next iteration
-                    current_piece = rotated_piece
-                
+                    current_piece_copy = rotated_piece_copy
+            
             elif move in ["LEFT", "RIGHT"]:
-                # Calculate the height after moving the piece multiple steps
-                new_piece_x = piece_x
+                # Calculate the new piece position after the move
+                new_piece_x = (piece_x_copy - 1) if move == "LEFT" else (piece_x_copy + 1)
                 
-                while True:
-                    # Move the piece
-                    new_piece_x = (self.move_piece_left(grid_copy, current_piece, new_piece_x, piece_y)
-                                if move == "LEFT" else self.move_piece_right(grid_copy, current_piece, new_piece_x, piece_y))
-                    
-                    # Check if the new position is within the grid boundaries
-                    if new_piece_x < 0 or new_piece_x >= len(grid_copy[0]):
-                        break
-                    
+                # Move the piece if the new position is within the grid boundaries
+                if new_piece_x + len(current_piece_copy[0]) <= len(grid_copy[0]):  # Check if the piece will not exceed the right boundary
                     # Drop the piece
-                    self.drop_piece_hard1(current_piece, new_piece_x, piece_y, grid_copy)
-                    
+                    self.drop_piece_hard1(current_piece_copy, new_piece_x, piece_y_copy, grid_copy)
+        
                     # Calculate the height after dropping the piece
                     max_height = sum(1 for row in grid_copy if any(row))
                     
@@ -648,23 +661,17 @@ class Tetris:
                     new_holes = self.count_holes_in_range(max_height, grid=grid_copy)
                     lines_cleared = self.get_clear_lines(grid_copy)
                     
+                    #wells=self.get_wells(grid_copy)
                     # Calculate the score based on your strategy
                     score = self.calculate_score(new_holes, max_height, lines_cleared)
-                    
+                        
                     # Update best move based on the score
                     if score < best_score:
                         best_score = score
                         best_move = move
-                    
-                    # Restore the grid to its original state
-                    grid_copy = copy.deepcopy(original_grid)
-                    
-                    # Stop when reached grid boundary
-                    if new_piece_x == piece_x:
-                        break
-                    piece_x = new_piece_x
         
         return best_move
+
 
     def runAIBlock(self,flag_new):
         global timer_seconds
@@ -809,11 +816,40 @@ class Tetris:
             nextYPos = int(self.drawer.height * 0.1)
             gameFont = pygame.font.Font(self.font_file, size=fontSize)
             nextText = gameFont.render("Next piece", True, self.drawer.fontColour1)
-            self.draw_piece(self.next_piece, self.board.GRID_WIDTH +5, 3)  # Draw next piece
-            screen.blit(nextText, ((self.drawer.boardOffset + 12) *BLOCK_SIZE, (nextYPos-1) * BLOCK_SIZE))
-            self.draw_piece(self.current_piece, self.piece_x, self.piece_y)# Draw current piece
+            gameFont = pygame.font.SysFont(pygame.font.get_fonts()[0], size=fontSize, bold=True)
+            nextText = gameFont.render("Next piece", True, self.drawer.fontColour1)
+                # Define the dimensions for the window around the "Next piece" text and the next piece
+            window_width = 8 * BLOCK_SIZE
+            window_height = 6 * BLOCK_SIZE
+            window_x = (self.drawer.boardOffset + 12) * BLOCK_SIZE
+            window_y = (nextYPos - 1) * BLOCK_SIZE
+                
+                # Draw the window background
+            pygame.draw.rect(screen, (100, 100, 100), (window_x, window_y, window_width, window_height))
+                
+                # Draw the "Next piece" text inside the window
+            screen.blit(nextText, (window_x + 0.5* BLOCK_SIZE, window_y + 0.5 * BLOCK_SIZE))
+                
+                # Draw the next piece inside the window
+            self.draw_piece(self.next_piece, self.board.GRID_WIDTH + 5, 3)
+                
+                # Draw the borders of the window
+            pygame.draw.rect(screen, (255, 255, 255), (window_x, window_y, window_width, window_height), 3)
+                
+                # Draw the current piece
+            self.draw_piece(self.current_piece, self.piece_x, self.piece_y)
+                
+                # Draw game statistics
             self.drawer.drawStats(self.board, timer_seconds)
             self.drawer.draw_score(self.score, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
+                
+            filled_rows = sum(1 for row in self.grid if any(row))
+            self.drawer.draw_height(filled_rows, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
+            max_height_range = (0, filled_rows)
+            num_holes = self.count_holes_in_range(filled_rows)
+                
+            self.drawer.drawHoles(num_holes, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
+            pygame.display.update()
             filled_rows = sum(1 for row in self.grid if any(row))
             #self.drawer.draw_height(filled_rows, self.drawer.fontColour, self.drawer.boardOffset, self.drawer.height)
             #max_height_range = (0, filled_rows)
@@ -849,7 +885,6 @@ class Tetris:
                                             return flag_new
                                     
                 if not self.paused:  # Only update the game if not paused
-                    
                     self.move_piece_down()
                     self.clear_lines()
                     self.clock.tick(10)  # Adjust game speed
