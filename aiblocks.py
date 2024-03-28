@@ -3,7 +3,7 @@ import random
 import copy
 import sys
 from collections import deque
-from PIL import Image
+#from PIL import Image
 # Define constants
 pygame.init()  # Initializing pygame
 
@@ -148,25 +148,25 @@ class Draw:
 
     def drawPauseScreen(self):
     # Assuming self.font_file contains the path to the font file
-        fontSize = int(1.5 * BLOCK_SIZE)
-        gameFont = pygame.font.Font(self.font_file)
+        #fontSize = int(1.5 * BLOCK_SIZE)
+        #gameFont = pygame.font.Font(self.font_file)
 
         self.draw_text_with_highlight("Game Menu!", (self.boardWidth // 2 + self.boardOffset - 1) * BLOCK_SIZE,
-                                    3 * BLOCK_SIZE, highlight_color=(80, 190, 200), font=None)
+                                    3 * BLOCK_SIZE, highlight_color=(80, 190, 200))
         self.draw_text_with_highlight("N:                        New Game", (self.boardWidth // 2) * BLOCK_SIZE,
-                                    7 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE), font=gameFont)
+                                    7 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
         self.draw_text_with_highlight("P:                        Pause/Unpause", (self.boardWidth // 2) * BLOCK_SIZE,
-                                    9 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE), font=gameFont)
+                                    9 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
         self.draw_text_with_highlight("Left Arrow:         Move Left", (self.boardWidth // 2) * BLOCK_SIZE,
-                                    11 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE), font=gameFont)
+                                    11 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
         self.draw_text_with_highlight("Right Arrow:      Move Right", (self.boardWidth // 2) * BLOCK_SIZE,
-                                    13 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE), font=gameFont)
+                                    13 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
         self.draw_text_with_highlight("Up Arrow:          Rotate", (self.boardWidth // 2) * BLOCK_SIZE,
-                                    15 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE), font=gameFont)
+                                    15 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
         self.draw_text_with_highlight("Down Arrow:          Move down", (self.boardWidth // 2) * BLOCK_SIZE,
-                                    17 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE), font=gameFont)
+                                    17 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
         self.draw_text_with_highlight("Space:               Hard Drop", (self.boardWidth // 2) * BLOCK_SIZE,
-                                    19 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE), font=gameFont)
+                                    19 * BLOCK_SIZE, int(1.5 * BLOCK_SIZE))
 
 
 
@@ -306,9 +306,10 @@ class Tetris:
             # Simulate placing the piece on the board and calculate the resulting score
             simulated_grid = copy.deepcopy(self.grid)
             self.drop_piece_hard1(piece, piece_x_copy, piece_y_copy, simulated_grid)
-            max_height = self.max_heightneha(piece, piece_x_copy, piece_y_copy)
+            max_height = self.max_height1(piece, piece_x_copy, piece_y_copy)
             holes = self.count_holes_in_range(max_height, grid=simulated_grid)
-            score = self.calculate_score(holes, max_height)
+            lines_cleared= self.get_clear_lines(simulated_grid)
+            score = self.calculate_score(holes, max_height, lines_cleared)
             
             # Update worst move based on the score
             if score > worst_score:
@@ -319,7 +320,7 @@ class Tetris:
         self.sum1 += worst_score
         self.last_type = Tetromino.SHAPES.index(current_piece)
         self.next_piece = Tetromino.SHAPES[piece_type]
-    def max_heightneha(self, piece, offset_x, offset_y):
+    def max_height1(self, piece, offset_x, offset_y):
         column_heights = [0] * self.board.GRID_WIDTH
         for y in range(len(piece)):
             for x in range(len(piece[y])):
@@ -575,20 +576,20 @@ class Tetris:
                 clear_lines += 1
         return clear_lines
     
-    def calculate_score(self, holes, max_height):
+    def calculate_score(self, holes, max_height, lines_cleared):
         # Define weights for different factors based on your strategy
         holes_weight = 2
         height_weight = 10
-
+        lines_weight=1000
         # Calculate the score based on the weighted sum of factors
-        score = holes_weight * holes + height_weight * max_height
+        score = holes_weight * holes + height_weight * max_height - lines_weight*lines_cleared
 
         return score
         
     def get_best_move(self, grid_copy, current_piece, piece_x, piece_y, max_height):
         possible_moves = ["LEFT", "RIGHT", "ROTATE"]
         best_move = None
-        best_score = float('inf')  # Initialize with negative infinity to ensure any found score is better
+        best_score = float('inf')  # Initialize with positive infinity to ensure any found score is better
         original_grid = copy.deepcopy(grid_copy)
         
         for move in possible_moves:
@@ -608,9 +609,10 @@ class Tetris:
                         
                         # Calculate the number of holes in the grid
                         new_holes = self.count_holes_in_range(max_height, grid=grid_copy)
+                        lines_cleared = self.get_clear_lines(grid_copy)
                         
                         # Calculate the score based on your strategy
-                        score = self.calculate_score(new_holes, max_height)
+                        score = self.calculate_score(new_holes, max_height, lines_cleared)
                         
                         # Update best move based on the score
                         if score < best_score:
@@ -622,7 +624,7 @@ class Tetris:
                     
                     # Rotate the piece for the next iteration
                     current_piece = rotated_piece
-                    
+                
             elif move in ["LEFT", "RIGHT"]:
                 # Calculate the height after moving the piece multiple steps
                 new_piece_x = piece_x
@@ -631,11 +633,11 @@ class Tetris:
                     # Move the piece
                     new_piece_x = (self.move_piece_left(grid_copy, current_piece, new_piece_x, piece_y)
                                 if move == "LEFT" else self.move_piece_right(grid_copy, current_piece, new_piece_x, piece_y))
-
+                    
                     # Check if the new position is within the grid boundaries
                     if new_piece_x < 0 or new_piece_x >= len(grid_copy[0]):
                         break
-
+                    
                     # Drop the piece
                     self.drop_piece_hard1(current_piece, new_piece_x, piece_y, grid_copy)
                     
@@ -644,23 +646,24 @@ class Tetris:
                     
                     # Calculate the number of holes in the grid
                     new_holes = self.count_holes_in_range(max_height, grid=grid_copy)
+                    lines_cleared = self.get_clear_lines(grid_copy)
                     
                     # Calculate the score based on your strategy
-                    score = self.calculate_score(new_holes, max_height)
+                    score = self.calculate_score(new_holes, max_height, lines_cleared)
                     
                     # Update best move based on the score
                     if score < best_score:
                         best_score = score
                         best_move = move
-
+                    
                     # Restore the grid to its original state
                     grid_copy = copy.deepcopy(original_grid)
-
+                    
                     # Stop when reached grid boundary
                     if new_piece_x == piece_x:
                         break
                     piece_x = new_piece_x
-
+        
         return best_move
 
     def runAIBlock(self,flag_new):
@@ -849,7 +852,7 @@ class Tetris:
                     
                     self.move_piece_down()
                     self.clear_lines()
-                    self.clock.tick(4)  # Adjust game speed
+                    self.clock.tick(10)  # Adjust game speed
                     if timer_seconds == 0:
                         self.game_over = True
                     else:
