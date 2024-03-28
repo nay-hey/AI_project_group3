@@ -140,7 +140,7 @@ class Draw:
                           
 
     def drawGameOver(self):
-        gameFont = pygame.font.Font(self.font_file, size=fontSize)
+        gameFont = pygame.font.Font(self.font_file)
         self.draw_text_with_highlight("GAME OVER", BLOCK_SIZE * (self.boardWidth // 2 + 2),
                                       (self.board.GRID_HEIGHT // 2 - 2) * BLOCK_SIZE)  # Update here
  
