@@ -282,61 +282,97 @@ class Tetris:
         self.last_type = None
         self.font_file = font_file
     def poll_attacker_ai(self, piece_x_copy, piece_y_copy):
-        # AI attacker logic
-        # Calculate the impact of each possible next piece on the player's score
-        # Choose the piece that increases the player's score the most (worst possible move)
-
         # Get available types, excluding the last used piece
         available_types = list(self.get_available_types().keys())
         current_piece = self.current_piece
+        
+        # Check if any rotation of the last piece exists in available types
         if self.last_type is not None:
-            # Check if any rotation of the last piece exists in available types
+        # Check if any rotation of the last piece exists in available types
             last_piece_rotations = [Tetromino.rotate(self.current_piece, i) for i in range(5)]
             for rotation in last_piece_rotations:
                 if rotation in Tetromino.SHAPES:
                     current_piece = rotation
                     available_types.remove(Tetromino.SHAPES.index(current_piece))
                     break
+        scores = self.score_types(available_types, piece_x_copy, piece_y_copy)
         
         worst_score = float('-inf')  # Initialize worst score to negative infinity
-        worst_piece = None
-
-        for piece_type in available_types:
-            piece = Tetromino.SHAPES[piece_type]
-            # Simulate placing the piece on the board and calculate the resulting score
-            simulated_grid = copy.deepcopy(self.grid)
-            self.drop_piece_hard1(piece, piece_x_copy, piece_y_copy, simulated_grid)
-            max_height = self.max_height1(piece, piece_x_copy, piece_y_copy)
-            holes = self.count_holes_in_range(max_height, grid=simulated_grid)
-            lines_cleared= self.get_clear_lines(simulated_grid)
-            score = self.calculate_score(holes, max_height, lines_cleared)
-            
-            # Update worst move based on the score
-            if score > worst_score:
+        worst_types = []
+        
+        for piece_type, score in scores.items():
+            if score >= worst_score:  # Choose the piece that worsens the player's score the most
                 worst_score = score
-                worst_piece = piece_type
-
-        piece_type = worst_piece
-        self.sum1 += worst_score
+                worst_types.append(piece_type)
+        
+        piece_type = random.choice(worst_types)
         self.last_type = Tetromino.SHAPES.index(current_piece)
         self.next_piece = Tetromino.SHAPES[piece_type]
-    def max_height1(self, piece, offset_x, offset_y):
-        column_heights = [0] * self.board.GRID_WIDTH
-        for y in range(len(piece)):
-            for x in range(len(piece[y])):
-                if piece[y][x]:
-                    # Ensure that offset_x + x is within the range of column_heights
-                    if offset_x + x >= 0 and offset_x + x < len(column_heights):
-                        column_heights[offset_x + x] = max(column_heights[offset_x + x], self.board.GRID_HEIGHT - (offset_y + y))
-        filled_rows = sum(1 for row in self.grid if any(row)) + sum(1 for row in piece if any(piece))
-        return filled_rows
+
     def get_available_types(self):
         """
         Returns a dictionary of available types of tetrominoes that can be used in the game.
         The keys are the types (0-indexed) and the values could be the counts of each type.
         """
         return {i: 1 for i in range(len(Tetromino.SHAPES))}  # In this example, each type appears only once.
-    
+
+    def score_types(self, available_types, piece_x_copy, piece_y_copy):
+        scores = {}
+        for type_ in available_types:
+            temp_board = copy.deepcopy(self.grid)
+            temp_piece = Tetromino.SHAPES[type_]
+            
+            worst_score = float('-inf')  # Initialize worst score to negative infinity
+            
+            for rotation in range(4):
+                rotated_piece = Tetromino.rotate(temp_piece, rotation)
+                # Simulate dropping the rotated piece onto the temporary board
+                self.drop_piece_hard1(rotated_piece, piece_x_copy, piece_y_copy, temp_board)
+                
+                # Calculate metrics after rotation
+                max_height = sum(1 for row in temp_board if any(row))
+                num_holes_before = self.count_holes_in_range(max_height, self.grid)
+                num_holes_after = self.count_holes_in_range(max_height, temp_board)
+                holes_difference = num_holes_after - num_holes_before
+                tallest_column = max(len(temp_board) - i for i, row in enumerate(temp_board) if any(row))
+                lines_cleared = self.lines_cleared(temp_board)
+                pieces_to_clear_lines = self.pieces_to_clear_lines(temp_board)
+                
+                # Assign scores based on metrics
+                score = holes_difference * 200 + tallest_column * 200 - lines_cleared * 10000000
+                if score > worst_score:
+                    worst_score = score
+            
+            scores[type_] = worst_score
+        return scores
+
+    def find_best_position_rotation(self, pit, current_piece):
+        """
+        Finds the best position and rotation for the current tetromino, considering the current state of the game board.
+        This function should implement the logic to evaluate potential positions and rotations.
+        """
+        # Placeholder implementation, always returns the same position and rotation.
+        return {"x": 0, "rotation": 0}
+
+    def lines_cleared(self, board):
+        lines = sum(all(row) for row in board)
+        return lines
+
+    def pieces_to_clear_lines(self, board):
+        # Simulate clearing lines and count the number of pieces required
+        temp_board = [row[:] for row in board]
+        lines_to_clear = self.lines_cleared(temp_board)
+        pieces_required = 0
+        while lines_to_clear > 0:
+            # Drop pieces to clear lines
+            for row in reversed(range(len(temp_board))):
+                if all(temp_board[row]):
+                    del temp_board[row]
+                    temp_board.insert(0, [0] * len(temp_board[0]))
+                    pieces_required += 1
+                    lines_to_clear -= 1
+                    break
+        return pieces_required
     def new_piece(self):
         next_piece = random.choice(Tetromino.SHAPES)
         self.next_piece = next_piece  # Update next piece
@@ -407,7 +443,7 @@ class Tetris:
         self.merge_piece(grid_copy,current_piece,piece_y,piece_x)
         piece_x = self.board.GRID_WIDTH // 2 - len(current_piece[0]) // 2
         piece_y = 0
-        self.score +=20
+        #self.score +=20
         #if self.check_collision(current_piece, piece_x, piece_y,):
          #   self.game_over = True
 
@@ -576,17 +612,19 @@ class Tetris:
                 clear_lines += 1
         return clear_lines
     
-    def calculate_score(self, holes, max_height, lines_cleared,wells=None):
+
+    def calculate_score(self, holes, max_height, lines_cleared,wells=0):
         # Define weights for different factors based on your strategy
-        holes_weight = 500
+        holes_weight = 5
         height_weight = 1000
-        lines_weight = 100
-        #wells_weight=150
+        lines_weight = 10000000000000
+        wells_weight= 1
         
         # Calculate the score based on the weighted sum of factors
-        score = holes_weight * holes + height_weight * max_height -lines_weight*lines_cleared
+        score = holes_weight * holes + height_weight * max_height -lines_weight*lines_cleared #+ wells_weight*wells
 
         return score
+    
     def get_wells(self,grid_copy):
         grid_transpose = list(zip(*grid_copy[::-1]))
         well=[]
@@ -600,7 +638,6 @@ class Tetris:
 
         return w
         
-    
     def get_best_move(self, grid_copy, current_piece, piece_x, piece_y, max_height):
         possible_moves = ["LEFT", "RIGHT", "ROTATE"]
         best_move = None
@@ -633,7 +670,6 @@ class Tetris:
                         new_holes = self.count_holes_in_range(max_height, grid=grid_copy)
                         lines_cleared = self.get_clear_lines(grid_copy)
                         
-                        #wells=self.get_wells(grid_copy)
                         # Calculate the score based on your strategy
                         score = self.calculate_score(new_holes, max_height, lines_cleared)
                         
@@ -645,30 +681,55 @@ class Tetris:
                     # Rotate the piece for the next iteration
                     current_piece_copy = rotated_piece_copy
             
-            elif move in ["LEFT", "RIGHT"]:
+            elif move == "LEFT":
                 # Calculate the new piece position after the move
-                new_piece_x = (piece_x_copy - 1) if move == "LEFT" else (piece_x_copy + 1)
+                new_piece_x = (piece_x_copy - 1)
                 
                 # Move the piece if the new position is within the grid boundaries
-                if new_piece_x + len(current_piece_copy[0]) <= len(grid_copy[0]):  # Check if the piece will not exceed the right boundary
+                if new_piece_x >= 0:  # Check if the piece will not exceed the left boundary
                     # Drop the piece
                     self.drop_piece_hard1(current_piece_copy, new_piece_x, piece_y_copy, grid_copy)
-        
+
                     # Calculate the height after dropping the piece
                     max_height = sum(1 for row in grid_copy if any(row))
-                    
+
                     # Calculate the number of holes in the grid
                     new_holes = self.count_holes_in_range(max_height, grid=grid_copy)
                     lines_cleared = self.get_clear_lines(grid_copy)
-                    
-                    #wells=self.get_wells(grid_copy)
+
                     # Calculate the score based on your strategy
                     score = self.calculate_score(new_holes, max_height, lines_cleared)
-                        
+
                     # Update best move based on the score
                     if score < best_score:
                         best_score = score
                         best_move = move
+                        
+            elif move == "RIGHT":
+                # Calculate the new piece position after the move
+                new_piece_x = len(grid_copy[0]) - len(current_piece_copy[0])
+
+                # Move the piece if the new position is within the grid boundaries
+                if new_piece_x + len(current_piece_copy[0]) <= len(grid_copy[0]):  # Check if the piece will not exceed the right boundary
+                    # Drop the piece
+                    self.drop_piece_hard1(current_piece_copy, new_piece_x, piece_y_copy, grid_copy)
+
+                    # Calculate the height after dropping the piece
+                    max_height = sum(1 for row in grid_copy if any(row))
+
+                    # Calculate the number of holes in the grid
+                    new_holes = self.count_holes_in_range(max_height, grid=grid_copy)
+                    lines_cleared = self.get_clear_lines(grid_copy)
+
+                    # Calculate the score based on your strategy
+                    score = self.calculate_score(new_holes, max_height, lines_cleared)
+
+                    # Update best move based on the score
+                    if score < best_score:
+                        best_score = score
+                        best_move = move
+                        
+            #print(best_move, best_score, max_height, lines_cleared, new_holes)
         
         return best_move
 
@@ -879,6 +940,7 @@ class Tetris:
                                         sys.exit()
                                     elif event.type == pygame.KEYDOWN:
                                         if event.key == pygame.K_p:  # Pause/unpause when P key is pressed
+                                            print("----------------")
                                             self.paused = not self.paused
                                         if event.key == pygame.K_n:
                                             flag_new=True#for new game
@@ -892,7 +954,6 @@ class Tetris:
                         self.game_over = True
                     else:
                         timer_seconds -= 1
-                
                 self.draw_grid()
                 
                 fontSize = int(1.5 * BLOCK_SIZE)
@@ -948,6 +1009,7 @@ class Tetris:
                     self.piece_x=self.move_piece_right()
                 if move=="ROTATE":
                     self.current_piece=self.rotate_piece()
+                
     def runAIvsAI(self,flag_new):
             global timer_seconds
             while not self.game_over:
