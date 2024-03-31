@@ -281,6 +281,8 @@ class Tetris:
         self.sum1=0
         self.last_type = None
         self.font_file = font_file
+        self.previous_best_score = float('inf')
+        self.previous_best_move = None
     def poll_attacker_ai(self, piece_x_copy, piece_y_copy):
         # Get available types, excluding the last used piece
         available_types = list(self.get_available_types().keys())
@@ -615,23 +617,22 @@ class Tetris:
 
     def calculate_score(self, holes, max_height, lines_cleared,wells=0):
         # Define weights for different factors based on your strategy
-        holes_weight = 5
-        height_weight = 1000
-        lines_weight = 10000000000000
-        wells_weight= 1
+        holes_weight =150
+        height_weight =100
+        lines_weight = 10000
+        wells_weight=10
         
         # Calculate the score based on the weighted sum of factors
         score = holes_weight * holes + height_weight * max_height -lines_weight*lines_cleared #+ wells_weight*wells
-
         return score
     
     def get_wells(self,grid_copy):
         grid_transpose = list(zip(*grid_copy[::-1]))
         well=[]
-        for col in grid_transpose:
+        for y in grid_transpose:
             ht_col=0
-            for block in col:
-                if block!=0:
+            for x in y:
+                if grid_copy[y][x]!=0:
                     ht_col+=1
             well.append(ht_col)
         w=abs(well[0]-well[1]) + abs(well[1]-well[2]) + abs(well[2]-well[3])+abs(well[3]-well[4])+abs(well[4]-well[5])+abs(well[5]-well[6])+abs(well[6]-well[7])+abs(well[7]-well[8])+abs(well[8]-well[9])
@@ -641,17 +642,19 @@ class Tetris:
     def get_best_move(self, grid_copy, current_piece, piece_x, piece_y, max_height):
         possible_moves = ["LEFT", "RIGHT", "ROTATE"]
         best_move = None
-        best_score = float('inf')  # Initialize with positive infinity to ensure any found score is better
+        best_score = float('inf')  # Initialize with positive infinity to find the minimum score
         original_grid = copy.deepcopy(grid_copy)
-        
-        # Iterate over all possible combinations of moves
+
+        # Calculate initial height and number of holes
+        max_height = sum(1 for row in grid_copy if any(row))
+        holes = self.count_holes_in_range(max_height, grid=grid_copy)
+        lines_cleared = self.get_clear_lines(grid_copy)
+
         for move in possible_moves:
-            # For each move, create a copy of the grid and piece position
             grid_copy = copy.deepcopy(original_grid)
             piece_x_copy = piece_x
             piece_y_copy = piece_y
             current_piece_copy = current_piece
-            
             if move == "ROTATE":
                 for rotation in range(4):  # Assuming 4 possible rotations
                     # Rotate the piece
@@ -680,58 +683,35 @@ class Tetris:
                             
                     # Rotate the piece for the next iteration
                     current_piece_copy = rotated_piece_copy
-            
-            elif move == "LEFT":
-                # Calculate the new piece position after the move
-                new_piece_x = (piece_x_copy - 1)
-                
-                # Move the piece if the new position is within the grid boundaries
-                if new_piece_x >= 0:  # Check if the piece will not exceed the left boundary
-                    # Drop the piece
-                    self.drop_piece_hard1(current_piece_copy, new_piece_x, piece_y_copy, grid_copy)
+            elif move in ["LEFT", "RIGHT"]:
+                new_piece_x = piece_x
+                while True:
+                    new_piece_x = (self.move_piece_left(grid_copy, current_piece, new_piece_x, piece_y)
+                                if move == "LEFT" else self.move_piece_right(grid_copy, current_piece, new_piece_x, piece_y))
 
-                    # Calculate the height after dropping the piece
-                    max_height = sum(1 for row in grid_copy if any(row))
+                    if new_piece_x < 0 or new_piece_x > len(grid_copy[0]) :
+                        break
 
-                    # Calculate the number of holes in the grid
-                    new_holes = self.count_holes_in_range(max_height, grid=grid_copy)
-                    lines_cleared = self.get_clear_lines(grid_copy)
-
-                    # Calculate the score based on your strategy
-                    score = self.calculate_score(new_holes, max_height, lines_cleared)
-
-                    # Update best move based on the score
+                    self.drop_piece_hard1(current_piece, new_piece_x, piece_y, grid_copy)
+                    new_max_height = sum(1 for row in grid_copy if any(row))
+                    new_holes = self.count_holes_in_range(new_max_height, grid=grid_copy)
+                    new_lines_cleared = self.get_clear_lines(grid_copy)
+                    
+                    if new_lines_cleared > lines_cleared:
+                            return move
+                    score = self.calculate_score(new_holes, new_max_height, new_lines_cleared)
                     if score < best_score:
                         best_score = score
                         best_move = move
-                        
-            elif move == "RIGHT":
-                # Calculate the new piece position after the move
-                new_piece_x = len(grid_copy[0]) - len(current_piece_copy[0])
 
-                # Move the piece if the new position is within the grid boundaries
-                if new_piece_x + len(current_piece_copy[0]) <= len(grid_copy[0]):  # Check if the piece will not exceed the right boundary
-                    # Drop the piece
-                    self.drop_piece_hard1(current_piece_copy, new_piece_x, piece_y_copy, grid_copy)
+                    grid_copy = copy.deepcopy(original_grid)
 
-                    # Calculate the height after dropping the piece
-                    max_height = sum(1 for row in grid_copy if any(row))
+                    if new_piece_x == piece_x:
+                        break
+                    piece_x = new_piece_x
 
-                    # Calculate the number of holes in the grid
-                    new_holes = self.count_holes_in_range(max_height, grid=grid_copy)
-                    lines_cleared = self.get_clear_lines(grid_copy)
-
-                    # Calculate the score based on your strategy
-                    score = self.calculate_score(new_holes, max_height, lines_cleared)
-
-                    # Update best move based on the score
-                    if score < best_score:
-                        best_score = score
-                        best_move = move
-                        
-            #print(best_move, best_score, max_height, lines_cleared, new_holes)
-        
         return best_move
+
 
 
     def runAIBlock(self,flag_new):
@@ -997,8 +977,10 @@ class Tetris:
                 #print(grid_copy)
                 current_piece_copy=copy.deepcopy(self.current_piece)
                 piece_x_copy=copy.deepcopy(self.piece_x)
-                
+                #if self.piece_y == 0:
+                 #   self.piece_y = 1
                 piece_y_copy=copy.deepcopy(self.piece_y)
+                
                 #print(piece_x_copy)
                 max_height=self.max_height(self.current_piece, self.piece_x, self.piece_y)
                 #get_best_move(self, grid_copy, current_piece, piece_x, piece_y, max_height)
