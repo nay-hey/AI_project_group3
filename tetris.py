@@ -3,6 +3,7 @@ import random
 import copy
 import sys
 from collections import deque
+from game import Game
 #from PIL import Image
 # Define constants
 pygame.init()  # Initializing pygame
@@ -554,12 +555,7 @@ class Tetris:
                     if 0 <= grid_y < len(grid) and 0 <= grid_x < len(grid[0]):
                         grid[grid_y][grid_x] = current_piece[y][x]
 
-    def aggregate_height(self, grid):
-        total_height = 0
-        grid_width = len(grid[0])
-        for c in range(grid_width):
-            total_height += self.get_column_height(grid, c)
-        return total_height
+    
 
     def bumpiness(self, grid):
         total = 0
@@ -661,7 +657,7 @@ class Tetris:
         row_fill_weight = 50  # Weight for row fill heuristic
         line_clear_bonus = 0.76  # Bonus for each cleared line
         position_penalty_weight = 20
-        bump = 0.18  # Penalty for position difference
+        bump = 0.08  # Penalty for position difference
 
         # Calculate the score based on the weighted sum of factors
         score = holes_weight * holes + height_weight * max_height - lines_weight * lines_cleared + bump*bumpiness
