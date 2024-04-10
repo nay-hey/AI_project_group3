@@ -23,7 +23,7 @@ Here's a breakdown of the functionality of the provided `Tetris` class and its m
 
 5. **score_types**: Scores each possible move or configuration of a tetromino based on certain criteria, such as the number of holes created.
 
-PIECES CLASS :
+### CLASS PIECES :
 
 1. ### `calc_skirt()` function :
 This function calculates the skirt of a Tetromino piece, which represents the lowest height at each column of the piece.
@@ -38,7 +38,7 @@ This function rotates a Tetromino piece clockwise by 90 degrees and returns the 
 - Adjusts the coordinates to stay within the board boundaries.
 - Returns a new Piece object representing the rotated piece.
 
-GREEDY_AI CLASS :
+### CLASS GREEDY_AI :
 
 1. ### `get_best_move(self, board, piece, depth=1)`:
 
@@ -62,4 +62,26 @@ GREEDY_AI CLASS :
     - **Number of cleared lines**: The AI rewards clearing lines as it reduces the board's congestion and provides more room for future placements.
     - **Aggregate height of the columns**: This measures the sum of heights of all columns in the board. Higher aggregate heights contribute to a higher cost.
     - **Bumpiness of the board (variation in column heights)**: Bumpiness quantifies the unevenness of the column heights. Higher bumpiness adds to the cost as it makes the board harder to manage.
+
+### CLASS BOARD :
+
+1. ### `load_high_score(self)`:
+
+- **Function**:
+    - Loads the high score from a file named "high_score.txt".
+
+- **Explanation**:
+    - Tries to open the "high_score.txt" file in read mode.
+    - Reads the content of the file and converts it to an integer, representing the high score.
+    - If the file doesn't exist or cannot be opened, it returns a default value of 0.
+
+2. ### `save_high_score(self)`:
+
+- **Function**:
+    - Saves the current high score to a file named "high_score.txt".
+
+- **Explanation**:
+    - Opens the "high_score.txt" file in write mode.
+    - Writes the current high score (stored in the `self.high_score` attribute) to the file as a string.
+    - Overwrites the existing content of the file with the new high score.
 
