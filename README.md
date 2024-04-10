@@ -134,18 +134,18 @@ Here's a brief explanation of the `Tetromino` class in two bullet points:
 
 - **check_collision(self, piece, offset_x, offset_y, grid=None)**:
   - Checks if there is a collision between the given piece and the grid at the specified offset position.
-  - 
+    
 - **merge_piece(self, grid=None, current_piece=None, piece_y=None, piece_x=None)**:
   - Merges the current piece into the grid at the specified position.
-  - 
+   
 - **clear_lines(self, grid=None)**:
   - Clears any complete lines in the grid and updates the score accordingly.
-  - 
+    
 - **max_height(self, piece, offset_x, offset_y)**:
   - Computes the maximum height of a piece placed at the specified offset on the grid.
-  - 
+
 - **count_holes_in_range(self, max_height=None, grid=None)**:
   - Counts the number of holes in the grid within the specified height range.
-  - 
+    
 - **get_clear_lines(self, grid_copy)**:
   - Determines the number of complete lines in a copy of the grid.
