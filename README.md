@@ -96,7 +96,6 @@ These functions handle the visualization of important game information and the m
     - Renders different text lines for menu options such as "New Game," "Pause/Unpause," etc., using the provided font file.
     
 ### CLASS TETROMINO :
-Here's a brief explanation of the `Tetromino` class in two bullet points:
 
 - **Shapes**: 
   - Defines the shapes of all Tetromino pieces using a nested list structure, where each sublist represents a shape with numerical values indicating the presence of blocks. 
