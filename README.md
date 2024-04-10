@@ -149,3 +149,25 @@ Here's a brief explanation of the `Tetromino` class in two bullet points:
     
 - **get_clear_lines(self, grid_copy)**:
   - Determines the number of complete lines in a copy of the grid.
+ 
+### These functions are related to the AI-controlled block generation in the game. Here's a brief explanation for each function:
+
+- **poll_attacker_ai(self, piece_x_copy, piece_y_copy)**:
+  - Selects the worst possible piece type for the AI attacker based on the current game state and player's grid.
+  
+- **get_available_types(self)**:
+  - Returns a dictionary of available types of tetrominoes that can be used in the game. Each type appears only once in this implementation.
+  
+- **score_types(self, available_types, piece_x_copy, piece_y_copy)**:
+  - Assigns scores to each available tetromino type based on various metrics such as hole difference, tallest column, and lines cleared after simulation.
+  
+- **find_best_position_rotation(self, pit, current_piece)**:
+  - Finds the best position and rotation for the current tetromino considering the current state of the game board. Placeholder implementation, always returning the same position and rotation.
+  
+- **lines_cleared(self, board)**:
+  - Counts the number of lines cleared in the given board configuration.
+  
+- **pieces_to_clear_lines(self, board)**:
+  - Simulates clearing lines on the board and counts the number of pieces required to clear those lines.
+
+These functions collectively contribute to the AI's decision-making process for generating and placing blocks strategically to maximize its effectiveness in the game.
