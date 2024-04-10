@@ -38,4 +38,28 @@ This function rotates a Tetromino piece clockwise by 90 degrees and returns the 
 - Adjusts the coordinates to stay within the board boundaries.
 - Returns a new Piece object representing the rotated piece.
 
+GREEDY_AI CLASS :
+
+1. ### `get_best_move(self, board, piece, depth=1)`:
+
+- **Performs a heuristic search of depth 1**: 
+    - This means that the AI considers only one level of moves ahead. It evaluates the current state of the board and the available pieces to determine the best move for the current turn.
+
+- **Generates all possible placements with the current piece**:
+    - The AI iterates over all possible horizontal positions and rotations of the current piece on the board. For each position, it evaluates the cost associated with placing the piece there.
+
+- **Chooses the placement that minimizes the cost function**:
+    - After generating all possible placements, the AI calculates the cost associated with each placement using the `cost()` function. It then selects the placement with the lowest cost as the best move.
+
+2. ### `cost(self, board, x, y, piece)`:
+
+- **Calculates the cost of a specific placement of a piece on the board**:
+    - This function evaluates the desirability of placing a piece at a particular position on the board.
+
+- **The cost function is defined as the sum of**:
+    - **Number of holes in the board**: Holes are empty spaces in the board that are covered by blocks above. More holes generally indicate a higher cost.
+    - **Maximum height of the board**: The maximum height of the board after placing the piece. Higher heights usually increase the cost.
+    - **Number of cleared lines**: The AI rewards clearing lines as it reduces the board's congestion and provides more room for future placements.
+    - **Aggregate height of the columns**: This measures the sum of heights of all columns in the board. Higher aggregate heights contribute to a higher cost.
+    - **Bumpiness of the board (variation in column heights)**: Bumpiness quantifies the unevenness of the column heights. Higher bumpiness adds to the cost as it makes the board harder to manage.
 
