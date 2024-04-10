@@ -171,3 +171,17 @@ Here's a brief explanation of the `Tetromino` class in two bullet points:
   - Simulates clearing lines on the board and counts the number of pieces required to clear those lines.
 
 These functions collectively contribute to the AI's decision-making process for generating and placing blocks strategically to maximize its effectiveness in the game.
+
+### Here's a brief explanation of how the code runs:
+
+- The script initializes the Pygame module, sets up the game window, and loads the background image.
+- It creates instances of the `Tetris` class (representing the game logic) and the `Draw` class (for drawing elements on the screen).
+- The game loop (`while True`) continually checks for user input events (such as key presses) and updates the game state accordingly.
+- Depending on the current screen (`current_screen`), different actions are taken:
+  - If the main screen is active, the background image and main menu options are displayed.
+  - If the game is paused, the pause screen is displayed.
+  - If the game is running, the Tetris grid, falling piece, and game statistics are drawn on the screen.
+  - If the game is over, the game over screen is displayed with the final score and an option to play again.
+- The game loop continues to execute, allowing the player to interact with the game until they choose to quit.
+
+
