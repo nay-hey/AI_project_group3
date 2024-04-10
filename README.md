@@ -22,8 +22,9 @@ Here's a breakdown of the functionality of the provided `Tetris` class and its m
 4. **find_best_position_rotation**: Finds the best position and rotation for the current tetromino, considering the current state of the game board.
 
 5. **score_types**: Scores each possible move or configuration of a tetromino based on certain criteria, such as the number of holes created.
-6. 
+
 PIECES CLASS :
+
 1.calc_skirt() function:
 This function calculates the skirt of a Tetromino piece, which represents the lowest height at each column of the piece.
 - It iterates over each column of the piece.
