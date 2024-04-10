@@ -25,13 +25,13 @@ Here's a breakdown of the functionality of the provided `Tetris` class and its m
 
 PIECES CLASS :
 
-1.calc_skirt() function:
+1. ### `calc_skirt()` function :
 This function calculates the skirt of a Tetromino piece, which represents the lowest height at each column of the piece.
 - It iterates over each column of the piece.
 - For each column, it finds the lowest block and records its height.
 - The function returns a list containing the minimum height for each column.
 
-2.get_next_rotation() function:
+2. ### `get_next_rotation()` function:
 This function rotates a Tetromino piece clockwise by 90 degrees and returns the rotated piece
 - Calculates the width of the piece.
 - Applies a clockwise rotation to the piece's coordinates.
