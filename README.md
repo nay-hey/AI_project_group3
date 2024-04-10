@@ -7,6 +7,14 @@ This is a simple implementation of the classic game Tetris in Python using the P
 Play rules
 Just like classical Tetris Game. You use up key to rotate a shape, left key to move left and right key to move right. Also you can use space key to drop down current shape immediately. If you want a pause, just press P key. The right panel shows the next shape.
 
+To Run :
+To run the Tetris game, execute the following command in your terminal: python3 Tetris.py
+- **On clicking 'A' (AI Mode):** Initiates AI-controlled gameplay where an algorithm autonomously manages block movements.
+- **On clicking 'I' (AI Generated Block):** Allows player control with the next block determined by AI, adding unpredictability.
+- **On clicking 'J' (AI vs AI):** Initiates a match between two AI algorithms, providing a spectacle of automated gameplay.
+- **On clicking 'R' (Random Block):** Introduces randomness by generating blocks unpredictably, challenging players' adaptability.
+
+
 AI Gameplay
 The included simple AI is programmed to move the tetromino to the left until it encounters an obstacle, then it rotates the tetromino. If there's still an obstruction, it moves the tetromino to the right. This process repeats during the AI's gameplay.
 
@@ -183,5 +191,4 @@ These functions collectively contribute to the AI's decision-making process for 
   - If the game is running, the Tetris grid, falling piece, and game statistics are drawn on the screen.
   - If the game is over, the game over screen is displayed with the final score and an option to play again.
 - The game loop continues to execute, allowing the player to interact with the game until they choose to quit.
-
 
