@@ -53,25 +53,16 @@ This function rotates a Tetromino piece clockwise by 90 degrees and returns the 
 
 ### CLASS BOARD :
 
-1. ### `load_high_score(self)`:
+1. ### `load_high_score(self)` / `save_high_score(self)`:
 
-- **Function**:
-    - Loads the high score from a file named "high_score.txt".
-
-- **Explanation**:
-    - Tries to open the "high_score.txt" file in read mode.
-    - Reads the content of the file and converts it to an integer, representing the high score.
-    - If the file doesn't exist or cannot be opened, it returns a default value of 0.
-
-2. ### `save_high_score(self)`:
-
-- **Function**:
-    - Saves the current high score to a file named "high_score.txt".
+- **Functionality**:
+    - `load_high_score`: Loads the high score from a file named "high_score.txt".
+    - `save_high_score`: Saves the current high score to the "high_score.txt" file.
 
 - **Explanation**:
-    - Opens the "high_score.txt" file in write mode.
-    - Writes the current high score (stored in the `self.high_score` attribute) to the file as a string.
-    - Overwrites the existing content of the file with the new high score.
+    - Both functions interact with the "high_score.txt" file to manage the high score.
+    - `load_high_score` attempts to read the high score from the file. If the file doesn't exist or cannot be opened, it returns a default value of 0.
+    - `save_high_score` writes the current high score (stored in `self.high_score`) to the "high_score.txt" file, updating it with the new value.
  
 ### CLASS DRAW :
 
