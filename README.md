@@ -81,7 +81,6 @@ This function rotates a Tetromino piece clockwise by 90 degrees and returns the 
 
 These functions handle the visualization of important game information and the main menu interface, providing essential feedback to the player and allowing them to interact with the game.
 
-Here's a concise explanation for the `drawGameOver()` and `drawPauseScreen()` methods suitable for a README file:
 
 ### `drawGameOver(self)`:
 
