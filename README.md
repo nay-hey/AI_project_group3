@@ -84,4 +84,77 @@ This function rotates a Tetromino piece clockwise by 90 degrees and returns the 
     - Opens the "high_score.txt" file in write mode.
     - Writes the current high score (stored in the `self.high_score` attribute) to the file as a string.
     - Overwrites the existing content of the file with the new high score.
+ 
+### CLASS DRAW :
 
+###  `draw_score()`: Draws the player's score on the screen.
+
+###  `draw_height()`: Draws the maximum height reached on the screen.
+
+###  `drawHoles()`: Draws the number of holes present on the screen.
+
+###  `draw_main_screen()`: Draws the main menu screen with various options for the player.
+
+These functions handle the visualization of important game information and the main menu interface, providing essential feedback to the player and allowing them to interact with the game.
+
+Here's a concise explanation for the `drawGameOver()` and `drawPauseScreen()` methods suitable for a README file:
+
+### `drawGameOver(self)`:
+
+- **Function**:
+    - Draws the "Game Over" message on the screen when the game ends.
+
+- **Explanation**:
+    - Uses the provided font file to render the text "GAME OVER" in a large font size.
+    - Places the text at the center of the screen to notify the player about the game's end.
+
+### `drawPauseScreen(self)`:
+
+- **Function**:
+    - Draws the pause menu screen with various instructions for the player.
+
+- **Explanation**:
+    - Renders different text lines for menu options such as "New Game," "Pause/Unpause," etc., using the provided font file.
+    - Each option is highlighted with a different color to improve readability.
+    - The text is positioned at specific coordinates on the screen to create a visually organized menu interface.
+
+### CLASS TETROMINO :
+Here's a brief explanation of the `Tetromino` class in two bullet points:
+
+- **Shapes**: 
+  - Defines the shapes of all Tetromino pieces using a nested list structure, where each sublist represents a shape with numerical values indicating the presence of blocks. 
+  - Each shape is represented by a unique combination of numbers, and the numbers are mapped to block images using the `BLOCK_IMAGES` dictionary.
+
+- **Block Images**: 
+  - Maps numerical block values to corresponding image filenames, allowing the graphical representation of Tetromino pieces.
+  - Provides a convenient way to associate visual representations with the numerical values used to define Tetromino shapes.
+ 
+### CLASS TETRIS : 
+
+- **new_piece(self)**: Randomly selects a Tetromino shape from predefined shapes and sets it as the next piece to be used in the game.
+- Here are concise explanations of the functions using game terminology, suitable for a README file:
+
+- **drop_piece_hard(self)**:
+  - Drops the current piece directly to the lowest possible position in the grid, merging it with existing blocks.
+  - If the dropped piece causes a collision, it triggers game over.
+
+- **drop_piece_hard1(self, current_piece, piece_x, piece_y, grid_copy)**:
+  - Similar to `drop_piece_hard`, this function drops the given piece to the lowest possible position in the grid, without updating the game state. Instead, it operates on a copy of the grid.
+  
+- **move_piece_down(self)**:
+  - Moves the current piece one step down in the grid.
+  - If the piece cannot move down further due to a collision, it merges with existing blocks, and a new piece is generated.
+  
+- **move_piece_left(self, grid=None, current_piece=None, piece_x=None, piece_y=None)**:
+  - Moves the current piece one step to the left in the grid if the move is valid.
+  
+- **move_piece_right(self, grid=None, current_piece=None, piece_x=None, piece_y=None)**:
+  - Moves the current piece one step to the right in the grid if the move is valid.
+  
+- **rotate_piece(self, grid=None, current_piece=None, piece_x=None, piece_y=None)**:
+  - Rotates the current piece clockwise if the rotation does not result in a collision.
+  
+- **is_valid_position(self, piece, x, y, grid)**:
+  - Checks if a given piece can be placed at a specified position on the grid without causing any collisions or going out of bounds.
+
+These functions handle the movement, rotation, and validation of Tetromino pieces within the game grid, ensuring smooth gameplay and enforcing game rules.
