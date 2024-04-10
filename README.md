@@ -68,11 +68,7 @@ This function rotates a Tetromino piece clockwise by 90 degrees and returns the 
     - `load_high_score`: Loads the high score from a file named "high_score.txt".
     - `save_high_score`: Saves the current high score to the "high_score.txt" file.
 
-- **Explanation**:
-    - Both functions interact with the "high_score.txt" file to manage the high score.
-    - `load_high_score` attempts to read the high score from the file. If the file doesn't exist or cannot be opened, it returns a default value of 0.
-    - `save_high_score` writes the current high score (stored in `self.high_score`) to the "high_score.txt" file, updating it with the new value.
- 
+      
 ### CLASS DRAW :
 
 ###  `draw_score()`: Draws the player's score on the screen.
@@ -92,10 +88,6 @@ Here's a concise explanation for the `drawGameOver()` and `drawPauseScreen()` me
 - **Function**:
     - Draws the "Game Over" message on the screen when the game ends.
 
-- **Explanation**:
-    - Uses the provided font file to render the text "GAME OVER" in a large font size.
-    - Places the text at the center of the screen to notify the player about the game's end.
-
 ### `drawPauseScreen(self)`:
 
 - **Function**:
@@ -103,9 +95,7 @@ Here's a concise explanation for the `drawGameOver()` and `drawPauseScreen()` me
 
 - **Explanation**:
     - Renders different text lines for menu options such as "New Game," "Pause/Unpause," etc., using the provided font file.
-    - Each option is highlighted with a different color to improve readability.
-    - The text is positioned at specific coordinates on the screen to create a visually organized menu interface.
-
+    
 ### CLASS TETROMINO :
 Here's a brief explanation of the `Tetromino` class in two bullet points:
 
