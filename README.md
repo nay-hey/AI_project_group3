@@ -111,7 +111,6 @@ Here's a brief explanation of the `Tetromino` class in two bullet points:
 ### CLASS TETRIS : 
 
 - **new_piece(self)**: Randomly selects a Tetromino shape from predefined shapes and sets it as the next piece to be used in the game.
-- Here are concise explanations of the functions using game terminology, suitable for a README file:
 
 - **drop_piece_hard(self)**:
   - Drops the current piece directly to the lowest possible position in the grid, merging it with existing blocks.
@@ -120,15 +119,12 @@ Here's a brief explanation of the `Tetromino` class in two bullet points:
 - **drop_piece_hard1(self, current_piece, piece_x, piece_y, grid_copy)**:
   - Similar to `drop_piece_hard`, this function drops the given piece to the lowest possible position in the grid, without updating the game state. Instead, it operates on a copy of the grid.
   
-- **move_piece_down(self)**:
+- **move_piece_down**:
   - Moves the current piece one step down in the grid.
   - If the piece cannot move down further due to a collision, it merges with existing blocks, and a new piece is generated.
   
-- **move_piece_left(self, grid=None, current_piece=None, piece_x=None, piece_y=None)**:
-  - Moves the current piece one step to the left in the grid if the move is valid.
-  
-- **move_piece_right(self, grid=None, current_piece=None, piece_x=None, piece_y=None)**:
-  - Moves the current piece one step to the right in the grid if the move is valid.
+- **move_piece_left** / **move_piece_right**:
+  - These functions move the current piece one step to the left/right in the grid if the move is valid.
   
 - **rotate_piece(self, grid=None, current_piece=None, piece_x=None, piece_y=None)**:
   - Rotates the current piece clockwise if the rotation does not result in a collision.
@@ -136,4 +132,20 @@ Here's a brief explanation of the `Tetromino` class in two bullet points:
 - **is_valid_position(self, piece, x, y, grid)**:
   - Checks if a given piece can be placed at a specified position on the grid without causing any collisions or going out of bounds.
 
-These functions handle the movement, rotation, and validation of Tetromino pieces within the game grid, ensuring smooth gameplay and enforcing game rules.
+- **check_collision(self, piece, offset_x, offset_y, grid=None)**:
+  - Checks if there is a collision between the given piece and the grid at the specified offset position.
+  - 
+- **merge_piece(self, grid=None, current_piece=None, piece_y=None, piece_x=None)**:
+  - Merges the current piece into the grid at the specified position.
+  - 
+- **clear_lines(self, grid=None)**:
+  - Clears any complete lines in the grid and updates the score accordingly.
+  - 
+- **max_height(self, piece, offset_x, offset_y)**:
+  - Computes the maximum height of a piece placed at the specified offset on the grid.
+  - 
+- **count_holes_in_range(self, max_height=None, grid=None)**:
+  - Counts the number of holes in the grid within the specified height range.
+  - 
+- **get_clear_lines(self, grid_copy)**:
+  - Determines the number of complete lines in a copy of the grid.
